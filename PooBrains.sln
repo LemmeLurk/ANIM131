@@ -1,0 +1,21 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2013
+VisualStudioVersion = 12.0.31101.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "PooBrains", "PooBrains", "{DF26484F-CC74-43D0-BD67-B252DB8C4606}"
+	ProjectSection(SolutionItems) = preProject
+		index.html = index.html
+		phaser.js = phaser.js
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "assets", "assets", "{67B2D1A7-E27C-49D0-A641-61A95AB4B6B3}"
+EndProject
+Global
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{67B2D1A7-E27C-49D0-A641-61A95AB4B6B3} = {DF26484F-CC74-43D0-BD67-B252DB8C4606}
+	EndGlobalSection
+EndGlobal
