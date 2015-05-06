@@ -1,6 +1,16 @@
 /// <reference path="~/phaser.js" />
 
-// Global members
+// Global objects
+var zombie;
+
+var player;
+
+var torso;
+
+var shotgun;
+
+
+// Global helper members
 var weights = [0.01, 0.03, 0.07, 0.3, 0.59];
 
 // bool to check if zombie has any balloons left
@@ -17,66 +27,85 @@ var game = new Phaser.Game(400, 490, Phaser.AUTO, 'gameDiv');
 // Create our 'main' state that will contain the game
 var mainState = {
 
-    preload: function () {
+    preload: function () 
+    {
         // This function will be executed at the beginning     
         // That's where we load the game's assets  
 
         // Change the background color of the game
-        //game.stage.backgroundColor = '#71c5cf';
-        game.stage.backgroundColor = '#22AAFF';
+        game.stage.backgroundColor = '#71c5cf';
 
-        // Load the bird sprite
+        // Load the player sprite
         game.load.image('man', 'assets/man.png');
 
-        // Load the pipe sprite
+        // Load the zombie sprite
         game.load.image('zombie', 'assets/zombie.png');
 
         // Load the Red Balloon sprite
         game.load.image('redBalloon', 'assets/redBalloon.png');
     },
 
-    create: function () {
-        // This function is called after the preload function     
-        // Here we set up the game, display sprites, etc.  
 
+    // This function is called after the preload function     
+    // Here we set up the game, display sprites, etc.  
+    create: function () 
+    {
         // Set the physics system
         game.physics.startSystem(Phaser.Physics.ARCADE);
 
 
-        // Display the bird on the screen
+        // PLAYER
+        // Display the player on the screen
         this.man = this.game.add.sprite(100, 245, 'man');
 
-        // Add gravity to the bird to make it fall
+        // Add gravity to the man to make it fall
         game.physics.arcade.enable(this.man);
 
 
         //this.man.body.gravity.y = 1000;
 
-        // Call the 'jump' function when the spacekey is hit
+        // Call the 'shoot' function when the spacekey is hit
         var spaceKey =
             this.game.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR);
 
         spaceKey.onDown.add(this.shoot, this);
 
-        this.zombies = game.add.group() // Create a group
+
+        // Main Holder Sprite :: ZOMBIE
+        zombie = game.add.group();
+
+        // Torso
+        zombie.torso = game.add.sprite(0, 0, 'zombie');
+        zombie.torso.anchor.setTo(0.5);
+        zombie.addChild(zombie.torso);
+
+        game.physics.arcade.enable(zombie.torso);
+
+        //  Balloon 
+        zombie.balloon = game.add.sprite(0, -100, 'redBalloon');
+        zombie.balloon.anchor.setTo(0.15, 0.5);
+        zombie.addChild(zombie.balloon);
+
+        // Zombie :: PROPERTIES 
+        this.zombies = game.add.group();
         this.zombies.enableBody = true; // Add physics to the group
-        this.zombies.createMultiple(100, 'zombie'); //Create 20 pipes TEMP 50
+        this.zombies.createMultiple(100, 'zombie');
+        this.zombies.createMultiple(100, 'redBalloon');
         
         // Set the position of the zombies group
-        this.zombies.setAll('zombie.body.x', 400);
-        this.zombies.setAll('zombie.body.y', 0);
+        //this.zombies.setAll('zombie.body.x', 400);
+        //this.zombies.setAll('zombie.body.y', 0);
 
         // Add timer :: call addRowOfPipes() every 1.5sec
         this.timer = game.time.events.loop(3500, this.addZombieHorde, this);
         this.addZombieHorde;
 
-        this.balloons = game.add.group();
-        this.balloons.enableBody = true;
-        this.balloons.createMultiple(100, 'redBalloons');
+        //this.balloons = game.add.group();
+        //this.balloons.enableBody = true;
+        //this.balloons.createMultiple(100, 'redBalloons');
 
-        // Add timer :: call addRowOfPipes() every 1.5sec
-        this.gameplayTimer = game.time.events.loop(10000, this.increaseStats,
-this);
+        // Add timer :: Increase stats every 1.5sec
+        //this.gameplayTimer = game.time.events.loop(10000, this.increaseStats, this);
 
         // Create the Score object
         this.score = 0;
@@ -86,7 +115,8 @@ this);
                 "30px Arial", fill: "#ffffff" });
     },
 
-    update: function () {
+    update: function () 
+    {
         // This function is called 60 times per second    
         // It contains the game's logic   
 
@@ -101,41 +131,46 @@ this);
             null, this);
     },
 
-    //Make the man jump
+    // TODO: Create shotgun
+    // TODO: Create pivot on shotgun
+    // TODO: Create projectile
+    // TODO: Make the projectile shoot from Shotgun 
+    //Make the player shoot
     shoot: function () {
         // Add a vertical velocity to the bird
         this.man.body.velocity.y = -350;
     },
 
     // Restart the game
-    restartGame: function () {
+    restartGame: function () 
+    {
         // Start the 'main'state, which restarts the game
         game.state.start('main');
     },
 
-    addOneZombie: function (x, y) {
+    addOneZombie: function (x, y) 
+    {
         // Get the first dead zombie of our group
-        var zombie = this.zombies.getFirstDead();
+        //var currentZombie = this.zombies.getFirstDead();
 
         // Set the new position of the pipe
-        zombie.reset(x, y);
+        //currentZombie.reset(x, y);
+        zombie.torso.reset(x,y);
 
         // TEMP make zombies float
-        zombie.body.velocity.y = -20;
+        zombie.torso.body.velocity.y = -20;
 
         // Set the gravity for the zombie
         //zombie.body.gravity.y = 1000;
 
         // Kill the zombie when it's no longer visible
-        zombie.checkWorldBounds = true;
-        zombie.outOfBoundsKill = true;
+        zombie.torso.checkWorldBounds = true;
+        zombie.torso.outOfBoundsKill = true;
     },
 
-    addZombieHorde: function () {
+    addZombieHorde: function () 
+    {
         var numberOfZombies = [5, 4, 3, 2, 1];
-
-        // 1st: 2.5%, 2nd: 10%, 3rd: 15%, Lucky: 22.5%, Consolation: 50%
-        weights = [0.01, 0.03, 0.07, 0.3, 0.59];
 
         var weighedList = [];
         var counter = 0;
@@ -146,10 +181,9 @@ this);
             var amount = weights[i] * 100;
 
             // Push Current PLACE into array proper amount
-            for (var j = 0; j < amount; j++) {
+            for (var j = 0; j < amount; j++) 
+            {
                 // Current PLACE :: Use i counter
-                // TODO: Test if this works when staticly adding as weights[i]
-                //  or, try this.weightedList v.s. var weightedList
                 counter++;
                 weighedList[counter] = numberOfZombies[i];
             }
@@ -158,16 +192,8 @@ this);
         // Pick number of zombies to spawn
         var R_Index = Math.floor( Math.random() * (100 - 0 + 1) ) + 0;
 
-        if (R_Index >= 59)
-            R_NumberOfZombies = 1;
-        else if (R_Index >= 30)
-            R_NumberOfZombies = 2;
-        else if (R_Index >= 7)
-            R_NumberOfZombies = 3;
-        else if (R_Index >= 3)
-            R_NumberOfZombies = 4;
-        else  
-            R_NumberOfZombies = 5;
+        // Get RandomNumber of zombies
+        R_NumberOfZombies = weighedList[R_Index];
 
         for (var i = 0; i < R_NumberOfZombies; i++)
         {
