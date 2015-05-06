@@ -89,8 +89,8 @@ var mainState = {
         // Zombie :: PROPERTIES 
         this.zombies = game.add.group();
         this.zombies.enableBody = true; // Add physics to the group
-        this.zombies.createMultiple(100, 'zombie');
-        this.zombies.createMultiple(100, 'redBalloon');
+        //this.zombies.createMultiple(100, 'zombie');
+        this.zombies.addChild(zombie);
         
         // Set the position of the zombies group
         //this.zombies.setAll('zombie.body.x', 400);
@@ -151,21 +151,24 @@ var mainState = {
     addOneZombie: function (x, y) 
     {
         // Get the first dead zombie of our group
-        //var currentZombie = this.zombies.getFirstDead();
+        //this.currentZombie = this.zombies.getFirstDead();
 
         // Set the new position of the pipe
         //currentZombie.reset(x, y);
-        zombie.torso.reset(x,y);
+        this.zombies.zombie.reset(x,y);
 
         // TEMP make zombies float
-        zombie.torso.body.velocity.y = -20;
+        //this.currentZombie.x = game.world.randomX;
+        //this.currentZombie.y = game.world.randomY;
+
+        //zombie.body.velocity.y = -20;
 
         // Set the gravity for the zombie
         //zombie.body.gravity.y = 1000;
 
         // Kill the zombie when it's no longer visible
-        zombie.torso.checkWorldBounds = true;
-        zombie.torso.outOfBoundsKill = true;
+        //torso.checkWorldBounds = true;
+        //torso.outOfBoundsKill = true;
     },
 
     addZombieHorde: function () 
