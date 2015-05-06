@@ -114,20 +114,19 @@ this);
     },
 
     addOneZombie: function (x, y) {
-        // Get the first dead pipe of our group
+        // Get the first dead zombie of our group
         var zombie = this.zombies.getFirstDead();
 
         // Set the new position of the pipe
         zombie.reset(x, y);
-        //zombie.reset(x, y);
 
-        // Add velocity to the zombie to make it move left
-        //zombie.body.velocity.x = -5;
-
-        // Add velocity to the zombie to make it move up
+        // TEMP make zombies float
         zombie.body.velocity.y = -20;
 
-        // Kill the pipe when it's no longer visible
+        // Set the gravity for the zombie
+        //zombie.body.gravity.y = 1000;
+
+        // Kill the zombie when it's no longer visible
         zombie.checkWorldBounds = true;
         zombie.outOfBoundsKill = true;
     },
@@ -136,12 +135,14 @@ this);
         var numberOfZombies = [5, 4, 3, 2, 1];
 
         // 1st: 2.5%, 2nd: 10%, 3rd: 15%, Lucky: 22.5%, Consolation: 50%
-        //weights = [0.01, 0.03, 0.07, 0.3, 0.59];
+        weights = [0.01, 0.03, 0.07, 0.3, 0.59];
 
-        var weighedList = new Array(100);
+        var weighedList = [];
+        var counter = 0;
 
         // loop over weights
-        for (i = 0; i < 5; i++) {
+        for (i = 0; i < 5; i++) 
+        {
             var amount = weights[i] * 100;
 
             // Push Current PLACE into array proper amount
@@ -149,7 +150,8 @@ this);
                 // Current PLACE :: Use i counter
                 // TODO: Test if this works when staticly adding as weights[i]
                 //  or, try this.weightedList v.s. var weightedList
-                weighedList.push(numberOfZombies[i]);
+                counter++;
+                weighedList[counter] = numberOfZombies[i];
             }
         }
 
