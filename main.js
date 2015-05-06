@@ -3,6 +3,8 @@
 // Global objects
 var zombie;
 
+var balloon;
+
 var player;
 
 var torso;
@@ -86,10 +88,15 @@ var mainState = {
         zombie.balloon.anchor.setTo(0.15, 0.5);
         zombie.addChild(zombie.balloon);
 
+        this.balloons = game.add.group();
+        this.balloons.enableBody = true;
+        this.balloons.createMultiple(100, 'redBalloon');
+
         // Zombie :: PROPERTIES 
         this.zombies = game.add.group();
         this.zombies.enableBody = true; // Add physics to the group
         //this.zombies.createMultiple(100, 'zombie');
+        //this.zombies.createMultiple(100, 'redBalloon');
         this.zombies.addChild(zombie);
         
         // Set the position of the zombies group
@@ -99,10 +106,6 @@ var mainState = {
         // Add timer :: call addRowOfPipes() every 1.5sec
         this.timer = game.time.events.loop(3500, this.addZombieHorde, this);
         this.addZombieHorde;
-
-        //this.balloons = game.add.group();
-        //this.balloons.enableBody = true;
-        //this.balloons.createMultiple(100, 'redBalloons');
 
         // Add timer :: Increase stats every 1.5sec
         //this.gameplayTimer = game.time.events.loop(10000, this.increaseStats, this);
@@ -150,18 +153,41 @@ var mainState = {
 
     addOneZombie: function (x, y) 
     {
+        this.zombies.setAll('visible',true);
+        this.zombies.setAll('x',x);
+        this.zombies.setAll('y',y);
+        /*
+        this.zombies.forEach
+        (
+            function(zombie)
+            {
+                zombie.forEach
+                (
+                    function()
+                    {
+                        this.x = x; this.y = y;
+                    }
+                )
+            }
+        ); */
+        //zombie.torso.reset(x, y);
+        //zombie.xy(100,100);
         // Get the first dead zombie of our group
-        //this.currentZombie = this.zombies.getFirstDead();
+        //this.zombie = this.zombies.getFirstDead();
 
         // Set the new position of the pipe
-        //currentZombie.reset(x, y);
-        this.zombies.zombie.reset(x,y);
+        //zombie.torso.body.x = game.world.randomX;
+        //zombie.torso.body.y = game.world.randomY;
+        //zombie.torso.reset(x, y);
+        //zombie.balloon.reset(x, y);
+        //this.zombies.zombie.x = game.world.randomX;
+        //this.zombies.zombie.y = game.world.randomY;
 
         // TEMP make zombies float
         //this.currentZombie.x = game.world.randomX;
         //this.currentZombie.y = game.world.randomY;
 
-        //zombie.body.velocity.y = -20;
+        //this.zombie.body.velocity.y = -20;
 
         // Set the gravity for the zombie
         //zombie.body.gravity.y = 1000;
@@ -212,9 +238,57 @@ var mainState = {
         this.labelScore.text = this.score;
     },
 
-    addBallons: function()
+    addOneBalloon: function () 
     {
-        
+        this.currentBalloon = this.balloons.getFirstDead();
+
+
+        currentBalloon.x = game.world.randomX;
+        currentBalloon.y = game.world.randomY;
+
+        currentBalloon.checkWorldBounds = true;
+        currentBalloon.outOfBoundsKill = true;
+    },
+
+    addZombieHorde: function () 
+    {
+        var numberOfZombies = [5, 4, 3, 2, 1];
+
+        var weighedList = [];
+        var counter = 0;
+
+        // loop over weights
+        for (i = 0; i < 5; i++) 
+        {
+            var amount = weights[i] * 100;
+
+            // Push Current PLACE into array proper amount
+            for (var j = 0; j < amount; j++) 
+            {
+                // Current PLACE :: Use i counter
+                counter++;
+                weighedList[counter] = numberOfZombies[i];
+            }
+        }
+
+        // Pick number of zombies to spawn
+        var R_Index = Math.floor( Math.random() * (100 - 0 + 1) ) + 0;
+
+        // Get RandomNumber of zombies
+        R_NumberOfZombies = weighedList[R_Index];
+
+        for (var i = 0; i < R_NumberOfZombies; i++)
+        {
+            var xCoord = Math.floor(Math.random() * 300) + 150;
+            var yCoord = Math.floor(Math.random() * 50) + 420;
+
+            this.addOneZombie(xCoord, yCoord + 10);
+        }
+
+        // Increment the score by 1 ea time new pipes are created
+        this.score += 1;
+
+        this.labelScore.text = this.score;
     },
 
     increaseStats: function()
