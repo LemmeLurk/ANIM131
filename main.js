@@ -77,8 +77,6 @@ var mainState = {
         game.physics.arcade.enable(this.man);
 
 
-        //this.man.body.gravity.y = 1000;
-
         // Call the 'shoot' function when the spacekey is hit
         var spaceKey =
             this.game.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR);
@@ -87,39 +85,55 @@ var mainState = {
 
 
         // Main Holder Sprite :: ZOMBIE
-        zombie = game.add.group();
+        this.zombie = game.add.group();
 
         // Torso
-        zombie.torso = game.add.sprite(0, 0, 'zombie');
-        zombie.torso.anchor.setTo(0.5);
-        zombie.addChild(zombie.torso);
+        this.zombie.torso = game.add.sprite(0, 0, 'zombie');
+        this.zombie.torso.anchor.setTo(0.5);
+        this.zombie.addChild(this.zombie.torso);
 
-        game.physics.arcade.enable(zombie.torso);
+        game.physics.arcade.enable(this.zombie.torso);
+
 
         //  Balloon 
-        zombie.balloon = game.add.sprite(0, -100, 'redBalloon');
-        zombie.balloon.anchor.setTo(0.15, 0.5);
-        zombie.addChild(zombie.balloon);
+        this.zombie.balloon = game.add.sprite(0, -100, 'redBalloon');
+        this.zombie.balloon.anchor.setTo(0.15, 0.5);
+        this.zombie.addChild(this.zombie.balloon);
 
-        this.balloons = game.add.group();
-        this.balloons.enableBody = true;
-        this.balloons.createMultiple(100, 'redBalloon');
 
-        // Zombie :: PROPERTIES 
-        this.zombies = game.add.group();
-        this.zombies.enableBody = true; // Add physics to the group
-        //this.zombies.createMultiple(100, 'zombie');
-        //this.zombies.createMultiple(100, 'redBalloon');
-        this.zombies.add(zombie);
-        
-        // Set the position of the zombies group
-        //this.zombies.setAll('zombie.body.x', 400);
-        //this.zombies.setAll('zombie.body.y', 0);
+        /*
+        Zombie Container
+        */
+        this.grpZombie = game.add.group();
+        this.grpZombie.enableBody = true; // Add physics to the group
+
+        this.grpZombie.createMultiple(100, 'zombie');
+
+        this.grpZombie.add(this.zombie.torso);
+       
+        /*
+        Balloon Container
+        */
+        this.grpBalloon = game.add.group();
+        this.grpBalloon.enableBody = true;
+
+        this.grpBalloon.createMultiple(100, 'redBalloon');
+
+        this.grpBalloon.add(this.zombie.balloon);
+
+
+        /*
+        Main Container
+        */ 
+        this.grpMain = game.add.group();
+        this.grpMain.enableBody = true;
+
+        this.grpMain.add(this.grpZombie);
+        this.grpMain.add(this.grpBalloon);
 
 
         // Add timer :: call addRowOfPipes() every 1.5sec
         this.timer = game.time.events.loop(3500, this.addZombieHorde, this);
-//        this.addZombieHorde;
 
         // Add timer :: Increase stats every 1.5sec
         //this.gameplayTimer = game.time.events.loop(10000, this.increaseStats, this);
@@ -172,56 +186,14 @@ var mainState = {
 
     addOneZombie: function (x, y) 
     {
-        // Try putting the number of random number of zombies to output
-        // as the condition in a for loop ~ 
-        // Problem is setAll() i believe, that is why I am not getting my
-        // Zombies to continue being spawned, but rather, they are spawn
-        // -ing all ontop of each other
-        var z = this.zombies;
-        z.setAll('visible',true);
-        //z.reset(x, y);
-        z.setAll('x',x);
-        z.setAll('y',y);
+        this.zombie = this.grpZombie.getFirstDead();
 
-        /*
-        this.zombies.forEach
-        (
-            function(zombie)
-            {
-                zombie.forEach
-                (
-                    function()
-                    {
-                        this.x = x; this.y = y;
-                    }
-                )
-            }
-        ); */
-        //zombie.torso.reset(x, y);
-        //zombie.xy(100,100);
-        // Get the first dead zombie of our group
-        //this.zombie = this.zombies.getFirstDead();
+        this.zombie.reset(x, y); 
 
-        // Set the new position of the pipe
-        //zombie.torso.body.x = game.world.randomX;
-        //zombie.torso.body.y = game.world.randomY;
-        //zombie.torso.reset(x, y);
-        //zombie.balloon.reset(x, y);
-        //this.zombies.zombie.x = game.world.randomX;
-        //this.zombies.zombie.y = game.world.randomY;
+        this.zombie.body.velocity.y = -20;
 
-        // TEMP make zombies float
-        //this.currentZombie.x = game.world.randomX;
-        //this.currentZombie.y = game.world.randomY;
-
-        //this.zombie.body.velocity.y = -20;
-
-        // Set the gravity for the zombie
-        //zombie.body.gravity.y = 1000;
-
-        // Kill the zombie when it's no longer visible
-        //torso.checkWorldBounds = true;
-        //torso.outOfBoundsKill = true;
+        this.zombie.checkWorldBounds = true;
+        this.zombie.outOfBoundsKill = true;
     },
 
     addZombieHorde: function () 
@@ -258,6 +230,7 @@ var mainState = {
             var yCoord = Math.floor(Math.random() * 50) + 420;
 
             this.addOneZombie(xCoord, yCoord + 10);
+            this.addOneBalloon(xCoord + 20, yCoord + 100);
         }
 
         // Increment the score by 1 ea time new pipes are created
@@ -266,58 +239,18 @@ var mainState = {
         this.labelScore.text = this.score;
     },
 
-    addOneBalloon: function () 
+    addOneBalloon: function (x, y) 
     {
-        this.currentBalloon = this.balloons.getFirstDead();
+        this.balloon = this.grpBalloon.getFirstDead();
 
+        this.balloon.reset(x, y);
 
-        currentBalloon.x = game.world.randomX;
-        currentBalloon.y = game.world.randomY;
+        this.balloon.body.velocity.y = -20;
 
-        currentBalloon.checkWorldBounds = true;
-        currentBalloon.outOfBoundsKill = true;
+        this.balloon.checkWorldBounds = true;
+        this.balloon.outOfBoundsKill = true;
     },
 
-    addZombieHorde: function () 
-    {
-        var numberOfZombies = [5, 4, 3, 2, 1];
-
-        var weighedList = [];
-        var counter = 0;
-
-        // loop over weights
-        for (i = 0; i < 5; i++) 
-        {
-            var amount = weights[i] * 100;
-
-            // Push Current PLACE into array proper amount
-            for (var j = 0; j < amount; j++) 
-            {
-                // Current PLACE :: Use i counter
-                counter++;
-                weighedList[counter] = numberOfZombies[i];
-            }
-        }
-
-        // Pick number of zombies to spawn
-        var R_Index = Math.floor( Math.random() * (100 - 0 + 1) ) + 0;
-
-        // Get RandomNumber of zombies
-        R_NumberOfZombies = weighedList[R_Index];
-
-        for (var i = 0; i < R_NumberOfZombies; i++)
-        {
-            var xCoord = Math.floor(Math.random() * 300) + 150;
-            var yCoord = Math.floor(Math.random() * 50) + 420;
-
-            this.addOneZombie(xCoord, yCoord + 10);
-        }
-
-        // Increment the score by 1 ea time new pipes are created
-        this.score += 1;
-
-        this.labelScore.text = this.score;
-    },
 
     increaseStats: function()
     {
