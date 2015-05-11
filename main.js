@@ -102,12 +102,8 @@ var mainState = {
 
         game.physics.arcade.enable(this.zombie.balloon);
 
-        this.grpZombie = game.add.group();
-
-        this.grpZombie.add(this.zombie);
-        this.grpZombie.createMultiple(100, 'zombie');
-        this.grpZombie.createMultiple(100, 'redBalloon');
-       
+        this.zombie.createMultiple(100, 'zombie');
+        this.zombie.createMultiple(100, 'redBalloon');
 
         // Add timer :: call addRowOfPipes() every 1.5sec
         this.timer = game.time.events.loop(3500, this.addZombieHorde, this);
@@ -163,10 +159,16 @@ var mainState = {
 
     addOneZombie: function (x, y) 
     {
-        currentZombie = this.grpZombie.getFirstDead();
+        var currentZombie = this.zombie.getAt(
+            this.zombie.getIndex(this.zombie.torso)
+        );
+
+        currentBalloon = this.zombie.getAt(
+            this.zombie.getIndex(this.zombie.balloon)
+        );
+
         currentZombie.reset(x, y);
 
-        currentBalloon = this.grpBalloon.getFirstDead();
         currentBalloon.reset(x, y);
 
        // currentZombie.setAll('visible', true);
