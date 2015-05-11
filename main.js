@@ -100,37 +100,11 @@ var mainState = {
         this.zombie.balloon.anchor.setTo(0.15, 0.5);
         this.zombie.addChild(this.zombie.balloon);
 
+        game.physics.arcade.enable(this.zombie.balloon);
 
-        /*
-        Zombie Container
-        */
-        this.grpZombie = game.add.group();
-        this.grpZombie.enableBody = true; // Add physics to the group
-
-        this.grpZombie.createMultiple(100, 'zombie');
-
-        this.grpZombie.add(this.zombie.torso);
+        this.zombie.createMultiple(100, 'zombie');
+        this.zombie.createMultiple(100, 'redBalloon');
        
-        /*
-        Balloon Container
-        */
-        this.grpBalloon = game.add.group();
-        this.grpBalloon.enableBody = true;
-
-        this.grpBalloon.createMultiple(100, 'redBalloon');
-
-        this.grpBalloon.add(this.zombie.balloon);
-
-
-        /*
-        Main Container
-        */ 
-        this.grpMain = game.add.group();
-        this.grpMain.enableBody = true;
-
-        this.grpMain.add(this.grpZombie);
-        this.grpMain.add(this.grpBalloon);
-
 
         // Add timer :: call addRowOfPipes() every 1.5sec
         this.timer = game.time.events.loop(3500, this.addZombieHorde, this);
@@ -186,14 +160,19 @@ var mainState = {
 
     addOneZombie: function (x, y) 
     {
-        this.zombie = this.grpZombie.getFirstDead();
+        //this.zombie.torso = this.zombie.getFirstDead();
+        //this.zombie.balloon = this.zombie.getFirstDead();
 
-        this.zombie.reset(x, y); 
+        this.zombie.torso.reset(x, y); 
+        this.zombie.balloon.reset(x, y); 
 
-        this.zombie.body.velocity.y = -20;
+        this.zombie.torso.body.velocity.y = -20;
+        this.zombie.balloon.body.velocity.y = -20;
 
-        this.zombie.checkWorldBounds = true;
-        this.zombie.outOfBoundsKill = true;
+        this.zombie.torso.checkWorldBounds = true;
+        this.zombie.balloon.checkWorldBounds = true;
+        this.zombie.torso.outOfBoundsKill = true;
+        this.zombie.balloon.outOfBoundsKill = true;
     },
 
     addZombieHorde: function () 
@@ -230,25 +209,12 @@ var mainState = {
             var yCoord = Math.floor(Math.random() * 50) + 420;
 
             this.addOneZombie(xCoord, yCoord + 10);
-            this.addOneBalloon(xCoord + 20, yCoord + 100);
         }
 
         // Increment the score by 1 ea time new pipes are created
         this.score += 1;
 
         this.labelScore.text = this.score;
-    },
-
-    addOneBalloon: function (x, y) 
-    {
-        this.balloon = this.grpBalloon.getFirstDead();
-
-        this.balloon.reset(x, y);
-
-        this.balloon.body.velocity.y = -20;
-
-        this.balloon.checkWorldBounds = true;
-        this.balloon.outOfBoundsKill = true;
     },
 
 
