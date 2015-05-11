@@ -11,6 +11,7 @@ var torso;
 
 var shotgun;
 
+var temp;
 
 // Global helper members
 var weights = [0.01, 0.03, 0.07, 0.3, 0.59];
@@ -37,6 +38,9 @@ var mainState = {
         // Change the background color of the game
         game.stage.backgroundColor = '#71c5cf';
 
+        // Load the image of Cloud
+        game.load.image('cloud', 'assets/cloud.png');
+
         // Load the player sprite
         game.load.image('man', 'assets/man.png');
 
@@ -55,10 +59,19 @@ var mainState = {
         // Set the physics system
         game.physics.startSystem(Phaser.Physics.ARCADE);
 
+        /*
+        Cloud Object
+        */
+        this.cloud = this.game.add.sprite(-100, 200, 'cloud');
+
+        game.physics.arcade.enable(this.cloud);
+
+        this.cloud.body.immovable = true;
+
 
         // PLAYER
         // Display the player on the screen
-        this.man = this.game.add.sprite(100, 245, 'man');
+        this.man = this.game.add.sprite(100, 210, 'man');
 
         // Add gravity to the man to make it fall
         game.physics.arcade.enable(this.man);
@@ -97,18 +110,24 @@ var mainState = {
         this.zombies.enableBody = true; // Add physics to the group
         //this.zombies.createMultiple(100, 'zombie');
         //this.zombies.createMultiple(100, 'redBalloon');
-        this.zombies.addChild(zombie);
+        this.zombies.add(zombie);
         
         // Set the position of the zombies group
         //this.zombies.setAll('zombie.body.x', 400);
         //this.zombies.setAll('zombie.body.y', 0);
 
+
         // Add timer :: call addRowOfPipes() every 1.5sec
         this.timer = game.time.events.loop(3500, this.addZombieHorde, this);
-        this.addZombieHorde;
+//        this.addZombieHorde;
 
         // Add timer :: Increase stats every 1.5sec
         //this.gameplayTimer = game.time.events.loop(10000, this.increaseStats, this);
+
+
+        /*
+        Player Score :: Label
+        */ 
 
         // Create the Score object
         this.score = 0;
@@ -153,9 +172,17 @@ var mainState = {
 
     addOneZombie: function (x, y) 
     {
-        this.zombies.setAll('visible',true);
-        this.zombies.setAll('x',x);
-        this.zombies.setAll('y',y);
+        // Try putting the number of random number of zombies to output
+        // as the condition in a for loop ~ 
+        // Problem is setAll() i believe, that is why I am not getting my
+        // Zombies to continue being spawned, but rather, they are spawn
+        // -ing all ontop of each other
+        var z = this.zombies;
+        z.setAll('visible',true);
+        //z.reset(x, y);
+        z.setAll('x',x);
+        z.setAll('y',y);
+
         /*
         this.zombies.forEach
         (
@@ -223,6 +250,7 @@ var mainState = {
 
         // Get RandomNumber of zombies
         R_NumberOfZombies = weighedList[R_Index];
+        temp = R_NumberOfZombies;
 
         for (var i = 0; i < R_NumberOfZombies; i++)
         {

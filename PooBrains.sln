@@ -5,6 +5,7 @@ VisualStudioVersion = 12.0.31101.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "PooBrains", "PooBrains", "{DF26484F-CC74-43D0-BD67-B252DB8C4606}"
 	ProjectSection(SolutionItems) = preProject
+		Class1.cs = Class1.cs
 		index.html = index.html
 		main.js = main.js
 		phaser.js = phaser.js
