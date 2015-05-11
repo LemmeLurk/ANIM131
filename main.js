@@ -160,19 +160,23 @@ var mainState = {
 
     addOneZombie: function (x, y) 
     {
+        currentZombie = this.zombie;
+
+        currentZombie.xy(x, y);
+
         //this.zombie.torso = this.zombie.getFirstDead();
         //this.zombie.balloon = this.zombie.getFirstDead();
 
-        this.zombie.torso.reset(x, y); 
-        this.zombie.balloon.reset(x, y); 
+       // this.zombie.torso.reset(x, y); 
+       // this.zombie.balloon.reset(x, y); 
 
-        this.zombie.torso.body.velocity.y = -20;
-        this.zombie.balloon.body.velocity.y = -20;
+       // this.zombie.torso.body.velocity.y = -20;
+       // this.zombie.balloon.body.velocity.y = -20;
 
-        this.zombie.torso.checkWorldBounds = true;
-        this.zombie.balloon.checkWorldBounds = true;
-        this.zombie.torso.outOfBoundsKill = true;
-        this.zombie.balloon.outOfBoundsKill = true;
+       // this.zombie.torso.checkWorldBounds = true;
+       // this.zombie.balloon.checkWorldBounds = true;
+       // this.zombie.torso.outOfBoundsKill = true;
+       // this.zombie.balloon.outOfBoundsKill = true;
     },
 
     addZombieHorde: function () 
