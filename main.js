@@ -13,6 +13,11 @@ var shotgun;
 
 var temp;
 
+/// HACK ///
+var currentZombie = [];
+var currentBalloon = [];
+var counter = 0;
+
 // Global helper members
 var weights = [0.01, 0.03, 0.07, 0.3, 0.59];
 
@@ -102,8 +107,20 @@ var mainState = {
 
         game.physics.arcade.enable(this.zombie.balloon);
 
-        this.zombie.createMultiple(100, 'zombie');
-        this.zombie.createMultiple(100, 'redBalloon');
+
+        /// HACK ///
+        for (var i = 0; i < 100; i++)
+        {
+           // Create 100 zombies
+           currentZombie[i] = game.add.sprite(0,0,'zombie'); 
+           game.physics.arcade.enable(currentZombie[counter]);
+        } 
+        for (var j = 0; j < 100; j++)
+        {
+           // Create 100 balloons 
+           currentBalloon[j] = game.add.sprite(0,0,'redBalloon'); 
+           game.physics.arcade.enable(currentBalloon[counter]);
+        } 
 
         // Add timer :: call addRowOfPipes() every 1.5sec
         this.timer = game.time.events.loop(3500, this.addZombieHorde, this);
@@ -159,7 +176,23 @@ var mainState = {
 
     addOneZombie: function (x, y) 
     {
-        var currentZombie = this.zombie.getAt(
+        var b = currentBalloon[counter];
+        var z = currentZombie[counter];
+
+        z.reset(x, y);
+
+        b.reset(x, y - 70);
+
+        z.body.velocity.y = -20;
+        b.body.velocity.y = -20;
+
+        // DO LAST
+        counter++;
+
+        // CHECK FOR OUT OF BOUNDS
+
+        /*
+        currentZombie[ounter] = this.zombie.getAt(
             this.zombie.getIndex(this.zombie.torso)
         );
 
@@ -167,9 +200,14 @@ var mainState = {
             this.zombie.getIndex(this.zombie.balloon)
         );
 
-        currentZombie.reset(x, y);
+        if (currentBalloon.alive && currentZombie.alive)
+        {
+            currentZombie.reset(x, y);
 
-        currentBalloon.reset(x, y);
+            currentBalloon.reset(x, y);
+        }
+        */
+
 
        // currentZombie.setAll('visible', true);
         //currentZombie.setAll('x', x);
