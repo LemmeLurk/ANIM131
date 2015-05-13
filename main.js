@@ -1,9 +1,9 @@
 /// <reference path="~/phaser.js" />
 
 // Global objects
-var zombie;
+var grpZombies;
 
-var balloon;
+var grpBalloons;
 
 var player;
 
@@ -12,11 +12,6 @@ var torso;
 var shotgun;
 
 var temp;
-
-/// HACK ///
-var currentZombie = [];
-var currentBalloon = [];
-var counter = 0;
 
 // Global helper members
 var weights = [0.01, 0.03, 0.07, 0.3, 0.59];
@@ -89,38 +84,14 @@ var mainState = {
         spaceKey.onDown.add(this.shoot, this);
 
 
-        // Main Holder Sprite :: ZOMBIE
-        this.zombie = game.add.group();
+        // Container of Zombies
+        grpZombies = game.add.group();
+        grpZombies.createMultiple(100, 'zombie');
 
-        // Torso
-        this.zombie.torso = game.add.sprite(0, 0, 'zombie');
-        this.zombie.torso.anchor.setTo(0.5);
-        this.zombie.addChild(this.zombie.torso);
+        // Container of Balloons
+        grpBalloons = game.add.group();
+        grpBalloons.createMultiple(100, 'redBalloon');
 
-        game.physics.arcade.enable(this.zombie.torso);
-
-
-        //  Balloon 
-        this.zombie.balloon = game.add.sprite(0, -100, 'redBalloon');
-        this.zombie.balloon.anchor.setTo(0.15, 0.5);
-        this.zombie.addChild(this.zombie.balloon);
-
-        game.physics.arcade.enable(this.zombie.balloon);
-
-
-        /// HACK ///
-        for (var i = 0; i < 100; i++)
-        {
-           // Create 100 zombies
-           currentZombie[i] = game.add.sprite(0,0,'zombie'); 
-           game.physics.arcade.enable(currentZombie[counter]);
-        } 
-        for (var j = 0; j < 100; j++)
-        {
-           // Create 100 balloons 
-           currentBalloon[j] = game.add.sprite(0,0,'redBalloon'); 
-           game.physics.arcade.enable(currentBalloon[counter]);
-        } 
 
         // Add timer :: call addRowOfPipes() every 1.5sec
         this.timer = game.time.events.loop(3500, this.addZombieHorde, this);
@@ -176,18 +147,46 @@ var mainState = {
 
     addOneZombie: function (x, y) 
     {
-        var b = currentBalloon[counter];
-        var z = currentZombie[counter];
+        var zombie = grpZombies.getFirstExists(false);
 
-        z.reset(x, y);
+        if (zombie)
+        {
+            zombie.exists = true;
+            zombie.position.set(x, y);
 
-        b.reset(x, y - 70);
+            game.physics.arcade.enable(zombie);
 
-        z.body.velocity.y = -20;
-        b.body.velocity.y = -20;
+            zombie.body.velocity.y = -20;
+        }
 
-        // DO LAST
-        counter++;
+        var balloon = grpBalloons.getFirstExists(false);
+
+        if (balloon)
+        {
+            balloon.exists = true;
+            balloon.position.set(x, y);
+
+            game.physics.arcade.enable(balloon);
+
+            balloon.body.velocity.y = -20;
+        }
+
+        /* DEAD CODE
+        // Torso
+        this.zombie.torso = game.add.sprite(0, 0, 'zombie');
+        this.zombie.torso.anchor.setTo(0.5);
+        this.zombie.addChild(this.zombie.torso);
+
+        game.physics.arcade.enable(this.zombie.torso);
+
+
+        //  Balloon 
+        this.zombie.balloon = game.add.sprite(0, -100, 'redBalloon');
+        this.zombie.balloon.anchor.setTo(0.15, 0.5);
+        this.zombie.addChild(this.zombie.balloon);
+
+        game.physics.arcade.enable(this.zombie.balloon);
+        */
 
         // CHECK FOR OUT OF BOUNDS
 
