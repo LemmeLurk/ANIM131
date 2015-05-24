@@ -17,8 +17,8 @@ var atCloud; //TODO create function that will do this
 
 
 // Initialize Phaser, and create a 400x490px game
-var game = new Phaser.Game(400, 490, Phaser.AUTO, 'gameDiv');
-
+//var game = new Phaser.Game(400, 490, Phaser.AUTO, 'gameDiv');
+var game = new Phaser.Game(400, 490, Phaser.CANVAS, 'gameDiv');
 
 // Create our 'main' state that will contain the game
 var mainState = {
@@ -187,6 +187,7 @@ var mainState = {
 
         zombie.checkWorldBounds = true;
         zombie.outOfBoundsKill = true;
+        game.debug.renderPhysicsBody(zombie.body);
     },
 
 
