@@ -1,26 +1,19 @@
 /// <reference path="~/phaser.js" />
 
 // Global objects
-var grpZombies;
-
-var grpBalloons;
-
-var player;
-
-var torso;
-
-var shotgun;
-
-var temp;
 
 // Global helper members
-var weights = [0.01, 0.03, 0.07, 0.3, 0.59];
+var numberOfZombies = [1, 2, 3, 4, 5];
+var numberWeights = [0.59, 0.3, 0.07, 0.03, 0.01];
+
+var typeOfZombies = [1, 2, 3];
+var typeWeights = [0.60, 0.30, 0.1]; 
 
 // bool to check if zombie has any balloons left
-var hasBallon;
+var hasBallon; //TODO create function that will do this
 
 // bool to check if zombie has reached the Man's cloud
-var atCloud;
+var atCloud; //TODO create function that will do this
 
 
 // Initialize Phaser, and create a 400x490px game
@@ -32,9 +25,6 @@ var mainState = {
 
     preload: function () 
     {
-        // This function will be executed at the beginning     
-        // That's where we load the game's assets  
-
         // Change the background color of the game
         game.stage.backgroundColor = '#71c5cf';
 
@@ -44,20 +34,22 @@ var mainState = {
         // Load the player sprite
         game.load.image('man', 'assets/man.png');
 
-        // Load the zombie sprite
-        game.load.image('zombie', 'assets/zombie.png');
+        // Load the zombie sprites
+        game.load.image('NoBalloons', 'assets/NoBalloons.png');
 
-        // Load the Red Balloon sprite
-        game.load.image('redBalloon', 'assets/redBalloon.png');
+        game.load.image('OneBalloon', 'assets/OneBalloon.png');
+
+        game.load.image('TwoBalloons', 'assets/TwoBalloons.png');
+
+        game.load.image('ThreeBalloons', 'assets/ThreeBalloons.png');
     },
 
 
-    // This function is called after the preload function     
-    // Here we set up the game, display sprites, etc.  
     create: function () 
     {
         // Set the physics system
         game.physics.startSystem(Phaser.Physics.ARCADE);
+
 
         /*
         Cloud Object
@@ -84,14 +76,33 @@ var mainState = {
         spaceKey.onDown.add(this.shoot, this);
 
 
-        // Container of Zombies
-        grpZombies = game.add.group();
-        grpZombies.createMultiple(100, 'zombie');
+        /*
+        Zombies :: 0 Balloons
+        */
+        this.noBalloons = game.add.group();
+        this.noBalloons.enableBody = true;
+        this.noBalloons.createMultiple(100, 'NoBalloons');
 
-        // Container of Balloons
-        grpBalloons = game.add.group();
-        grpBalloons.createMultiple(100, 'redBalloon');
+        /*
+        Zombies :: 1 Balloon
+        */
+        this.oneBalloon = game.add.group();
+        this.oneBalloon.enableBody = true;
+        this.oneBalloon.createMultiple(100, 'OneBalloon');
+        
+        /*
+        Zombies :: 2 Balloons
+        */
+        this.twoBalloons = game.add.group();
+        this.twoBalloons.enableBody = true;
+        this.twoBalloons.createMultiple(100, 'TwoBalloons');
 
+        /*
+        Zombies :: 3 Balloons
+        */
+        this.threeBalloons = game.add.group();
+        this.threeBalloons.enableBody = true;
+        this.threeBalloons.createMultiple(100, 'ThreeBalloons');
 
         // Add timer :: call addRowOfPipes() every 1.5sec
         this.timer = game.time.events.loop(3500, this.addZombieHorde, this);
@@ -145,123 +156,77 @@ var mainState = {
         game.state.start('main');
     },
 
-    addOneZombie: function (x, y) 
+
+
+    addOneZombie: function (x, y, zombieType) 
     {
-        var zombie = grpZombies.getFirstExists(false);
+        var zombie;
+        var rate = 0;
 
-        if (zombie)
+        switch (zombieType)
         {
-            zombie.exists = true;
-            zombie.position.set(x, y);
+            case 1:
+                zombie = this.oneBalloon.getFirstDead();
+                rate = -20;
+            break;
 
-            game.physics.arcade.enable(zombie);
+            case 2:
+                zombie = this.twoBalloons.getFirstDead();
+                rate = -40;
+            break;
 
-            zombie.body.velocity.y = -20;
+            case 3:
+                zombie = this.threeBalloons.getFirstDead();
+                rate = -60;
+            break;
         }
 
-        var balloon = grpBalloons.getFirstExists(false);
+        zombie.reset(x, y);
 
-        if (balloon)
-        {
-            balloon.exists = true;
-            balloon.position.set(x, y);
+        zombie.body.velocity.y = rate;
 
-            game.physics.arcade.enable(balloon);
-
-            balloon.body.velocity.y = -20;
-        }
-
-        /* DEAD CODE
-        // Torso
-        this.zombie.torso = game.add.sprite(0, 0, 'zombie');
-        this.zombie.torso.anchor.setTo(0.5);
-        this.zombie.addChild(this.zombie.torso);
-
-        game.physics.arcade.enable(this.zombie.torso);
-
-
-        //  Balloon 
-        this.zombie.balloon = game.add.sprite(0, -100, 'redBalloon');
-        this.zombie.balloon.anchor.setTo(0.15, 0.5);
-        this.zombie.addChild(this.zombie.balloon);
-
-        game.physics.arcade.enable(this.zombie.balloon);
-        */
-
-        // CHECK FOR OUT OF BOUNDS
-
-        /*
-        currentZombie[ounter] = this.zombie.getAt(
-            this.zombie.getIndex(this.zombie.torso)
-        );
-
-        currentBalloon = this.zombie.getAt(
-            this.zombie.getIndex(this.zombie.balloon)
-        );
-
-        if (currentBalloon.alive && currentZombie.alive)
-        {
-            currentZombie.reset(x, y);
-
-            currentBalloon.reset(x, y);
-        }
-        */
-
-
-       // currentZombie.setAll('visible', true);
-        //currentZombie.setAll('x', x);
-        //currentZombie.setAll('y', y);
-        //currentZombie.setAll('velocity', -20);
-
-        //this.zombie.torso = this.zombie.getFirstDead();
-        //this.zombie.balloon = this.zombie.getFirstDead();
-
-       // this.zombie.torso.reset(x, y); 
-       // this.zombie.balloon.reset(x, y); 
-
-       // this.zombie.torso.body.velocity.y = -20;
-       // this.zombie.balloon.body.velocity.y = -20;
-
-       // this.zombie.torso.checkWorldBounds = true;
-       // this.zombie.balloon.checkWorldBounds = true;
-       // this.zombie.torso.outOfBoundsKill = true;
-       // this.zombie.balloon.outOfBoundsKill = true;
+        zombie.checkWorldBounds = true;
+        zombie.outOfBoundsKill = true;
     },
+
 
     addZombieHorde: function () 
     {
-        var numberOfZombies = [5, 4, 3, 2, 1];
-
-        var weighedList = [];
-        var counter = 0;
-
-        // loop over weights
-        for (i = 0; i < 5; i++) 
+        var randomGenerator = function(weights, objArray)
         {
-            var amount = weights[i] * 100;
+            var counter = 0;
+            var weighedList = [];
 
-            // Push Current PLACE into array proper amount
-            for (var j = 0; j < amount; j++) 
+            for (i = 0; i < weights.length; i++) 
             {
-                // Current PLACE :: Use i counter
-                counter++;
-                weighedList[counter] = numberOfZombies[i];
+                var amount = weights[i] * 100;
+
+                // Push Current PLACE into array proper amount
+                for (var j = 0; j < amount; j++) 
+                {
+                    // Current PLACE :: Use i counter
+                    counter++;
+                    weighedList[counter] = objArray[i];
+                }
             }
-        }
 
-        // Pick number of zombies to spawn
-        var R_Index = Math.floor( Math.random() * (100 - 0 + 1) ) + 0;
+            // Pick number of zombies to spawn
+            var R_Index = Math.floor( Math.random() * (100 - 0 + 1) ) + 0;
 
-        // Get RandomNumber of zombies
-        R_NumberOfZombies = weighedList[R_Index];
-        temp = R_NumberOfZombies;
+            // Get RandomNumber of zombies
+            return weighedList[R_Index];
+        };
+
+        R_NumberOfZombies = randomGenerator(numberWeights, numberOfZombies);
 
         for (var i = 0; i < R_NumberOfZombies; i++)
         {
             var xCoord = Math.floor(Math.random() * 300) + 150;
             var yCoord = Math.floor(Math.random() * 50) + 420;
 
-            this.addOneZombie(xCoord, yCoord + 10);
+            R_TypeOfZombie = randomGenerator(typeWeights, typeOfZombies)
+
+            this.addOneZombie(xCoord, yCoord + 10, R_TypeOfZombie);
         }
 
         // Increment the score by 1 ea time new pipes are created
