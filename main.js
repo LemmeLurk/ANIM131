@@ -1,5 +1,6 @@
 /// <reference path="~/phaser.js" />
 
+
 // Global objects
 
 // Global helper members
@@ -19,9 +20,8 @@ var atCloud; //TODO create function that will do this
 var cannon;
 var bullets;
 var angle = 0;
-var fireRate = 1000;
+var fireRate = 500;
 var nextFire = 0;
-
 
 
 // Initialize Phaser, and create a 400x490px game
@@ -41,6 +41,9 @@ var mainState = {
 
         // Load the player sprite
         game.load.image('man', 'assets/man.png');
+
+        game.load.spritesheet('zombieSpritesheet', 
+            'assets/BalloonSpritesheet.png', 50, 150);
 
         // Load the zombie sprite
         game.load.image('torso', 'assets/Zombie.png');
@@ -89,39 +92,48 @@ var mainState = {
         */
         this.zombie = game.add.group();
         this.zombie.enableBody = true;
-        this.zombie.createMultiple(100, 'torso');
+        this.zombie.createMultiple(500, 'zombieSpritesheet', 0);
+        this.zombie.setAll('body.gravity.y', 1000);
 
         /*
         Zombies :: 1 Balloon
         */
         this.oneBalloon = game.add.group();
         this.oneBalloon.enableBody = true;
-        this.oneBalloon.createMultiple(100, 'OneBalloon');
+        this.oneBalloon.createMultiple(500, 'zombieSpritesheet', 1);
 
         /*
         Zombies :: 2 Balloons
         */
         this.twoBalloons = game.add.group();
         this.twoBalloons.enableBody = true;
-        this.twoBalloons.createMultiple(100, 'TwoBalloons');
+        this.twoBalloons.createMultiple(500, 'zombieSpritesheet', 2);
 
         /*
         Zombies :: 3 Balloons
         */
         this.threeBalloons = game.add.group();
         this.threeBalloons.enableBody = true;
-        this.threeBalloons.createMultiple(100, 'ThreeBalloons');
+        this.threeBalloons.createMultiple(500, 'zombieSpritesheet', 3);
 
 
         bullets = game.add.group();
         bullets.createMultiple(500, 'bullet', 0, false);
 
-        cannon = game.add.sprite(150, 220, 'cannon');
+        cannon = game.add.sprite(150, 235, 'cannon');
         cannon.anchor.set(0, 0.5);
 
 
         // Add timer :: call addRowOfPipes() every 1.5sec
-        this.timer = game.time.events.loop(3500, this.addZombieHorde, this);
+       // this.timer = game.time.events.loop(3500, this.addZombieHorde, this);
+        this.timer = game.time.events.loop(1500, 
+            this.addZombieHorde, this);
+
+
+        this.reloadTimer = this.game.time.create(this.game, false);
+
+
+        this.cooldown = this.game.time.now;
 
         // Add timer :: Increase stats every 1.5sec
         //this.gameplayTimer = game.time.events.loop(10000, this.increaseStats, this);
@@ -137,48 +149,33 @@ var mainState = {
         this.labelScore = game.add.text(20, 20, "0", {
             font:
                 "30px Arial", fill: "#ffffff" });
+
+        /*
+        Shot Counter :: Text and Label
+        */
+        this.shotCounter = 6;
+
+        this.labelShotCounter = 
+            game.add.text(200, 200, "6", 
+                {font: "30px Arial", fill: "#ffffff"});
     },
 
     update: function () 
     {
-    // TODO this function definition doesn't belong here
-    var shoot = function () {
-        if (game.time.now > nextFire)
-        {
-            nextFire = game.time.now + fireRate;
-
-            var bullet = bullets.getFirstExists(false);
-
-            if (bullet)
-            {
-                bullet.frame = game.rnd.integerInRange(0, 6);
-                bullet.exists = true;
-                bullet.position.set(cannon.x, cannon.y);
-
-                game.physics.arcade.enable(bullet);
-
-                bullet.body.rotation = cannon.rotation + game.math.degToRad(-90);
-
-                var magnitude = 500;
-                var angle = bullet.body.rotation + Math.PI / 2;
-
-                bullet.body.velocity.x = magnitude * Math.cos(angle);
-                bullet.body.velocity.y = magnitude * Math.sin(angle);
-            }
-        }
-    };
-        // This function is called 60 times per second    
-        // It contains the game's logic   
-
-        //TODO: Fix this to move the zombie left and fall onto the cloud
-        // If the bird is out of the world (too high or too low), call the 
-        //'restartGame' function
-        //if (this.zombie.inWorld == false)
-        //    this.restartGame();
+        // TODO Fix this to move the zombie left and fall onto the cloud
 
         // call restartGame() each time the bird collides with a pipe
         game.physics.arcade.overlap(this.man, this.pipes, this.restartGame,
             null, this);
+
+        game.physics.arcade.overlap(this.oneBalloon, bullets, 
+            this.oneBalloonHandler, null, this); 
+
+        game.physics.arcade.overlap(this.twoBalloons, bullets, 
+            this.twoBalloonHandler, null, this); 
+
+        game.physics.arcade.overlap(this.threeBalloons, bullets, 
+            this.threeBalloonHandler, null, this); 
 
         var dx = game.input.activePointer.worldX - cannon.x;
         var dy = game.input.activePointer.worldY - cannon.y;
@@ -186,15 +183,19 @@ var mainState = {
 
         if (game.input.activePointer.isDown)
         {
-            shoot();
+            if (this.shotCounter > 0)
+            {
+                this.shoot();
+            }
+            else if (this.game.time.now - this.cooldown > 3000)
+            {
+                this.shotCounter = 6;
+                this.labelShotCounter.text = this.shotCounter;
+                this.shoot();
+            }
         }
     },
 
-    // TODO: Create shotgun
-    // TODO: Create pivot on shotgun
-    // TODO: Create projectile
-    // TODO: Make the projectile shoot from Shotgun 
-    //Make the player shoot
 
     // Restart the game
     restartGame: function () 
@@ -204,6 +205,27 @@ var mainState = {
     },
 
 
+    oneBalloonHandler: function(zombie, bullet)
+    {            
+        zombie.kill();
+        bullet.kill();
+        this.addOneZombie(zombie.x, zombie.y, 0);
+    },
+
+    twoBalloonHandler: function(zombie, bullet)
+    {            
+        zombie.kill();
+        bullet.kill();
+        this.addOneZombie(zombie.x, zombie.y, 1);
+    },
+
+    threeBalloonHandler: function(zombie, bullet)
+    {            
+        zombie.kill();
+        bullet.kill();
+        this.addOneZombie(zombie.x, zombie.y, 2);
+    },
+
 
     addOneZombie: function (x, y, zombieType) 
     {
@@ -212,28 +234,40 @@ var mainState = {
 
         switch (zombieType)
         {
+            case 0:
+                _zombie = this.zombie.getFirstDead();
+                _zombie.frame = 0;
+            break;
+
             case 1:
                 _zombie = this.oneBalloon.getFirstDead();
+                _zombie.frame = 1;
                 rate = -20;
             break;
 
             case 2:
                 _zombie = this.twoBalloons.getFirstDead();
+                _zombie.frame = 2;
                 rate = -40;
             break;
 
             case 3:
                 _zombie = this.threeBalloons.getFirstDead();
+                _zombie.frame = 3;
                 rate = -60;
             break;
         }
 
-        _zombie.reset(x, y);
+        // HACKISH :: Solves undefined reference
+        if (_zombie)
+        {
+            _zombie.reset(x, y);
 
-        _zombie.body.velocity.y = rate;
+            _zombie.body.velocity.y = rate;
 
-        _zombie.checkWorldBounds = true;
-        _zombie.outOfBoundsKill = true;
+            _zombie.checkWorldBounds = true;
+            _zombie.outOfBoundsKill = true;
+        }
     },
 
 
@@ -313,9 +347,62 @@ var mainState = {
             }*/
         }
     },
+
+
+    shoot: function () 
+    {
+        if (game.time.now > nextFire)
+        {
+            nextFire = game.time.now + fireRate;
+
+            var bullet = bullets.getFirstExists(false);
+
+            if (bullet)
+            {
+                bullet.frame = game.rnd.integerInRange(0, 6);
+                bullet.exists = true;
+                bullet.position.set(cannon.x, cannon.y);
+
+                game.physics.arcade.enable(bullet);
+
+                bullet.body.rotation = cannon.rotation + game.math.degToRad(-90);
+
+                var magnitude = 500;
+                var angle = bullet.body.rotation + Math.PI / 2;
+
+                bullet.body.velocity.x = magnitude * Math.cos(angle);
+                bullet.body.velocity.y = magnitude * Math.sin(angle);
+
+                this.shotCounter -= 1;
+                this.labelShotCounter.text = this.shotCounter;
+
+                if (this.shotCounter === 0)
+                {
+                    this.labelShotCounter.text = '6';
+                    this.cooldown = this.game.time.now;
+                }
+            }
+        }
+    },
 };
 
+function resizeGame()
+{
+    var height = $(window).height();
+    var width = $(window).width();
 
+    game.width = width;
+    game.height = height;
+    //game.stage.bounds.width = width;
+    //game.stage.bounds.height = height;
+
+    if (game.renderType === Phaser.WEBGL)
+    {
+        game.renderer.resize(width, height);
+    }
+}
+
+$(window).resize(function() {window.resizeGame(); });
 // Add and start the 'main' state to start the game
 game.state.add('main', mainState);
 game.state.start('main');
