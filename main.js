@@ -11,11 +11,11 @@ var typeOfZombies = [1, 2, 3];
 var typeWeights = [0.60, 0.30, 0.1]; 
 
 
-// bool to check if zombie has any balloons left
-var hasBallon; //TODO create function that will do this
-
 // bool to check if zombie has reached the Man's cloud
 var atCloud; //TODO create function that will do this
+
+var zombieAmount = 0;
+var zombieCounter = 0;
 
 var cannon;
 var bullets;
@@ -23,10 +23,12 @@ var angle = 0;
 var fireRate = 500;
 var nextFire = 0;
 
+var windowWidth = $(window).width();
+var windowHeight = $(window).height();
 
 // Initialize Phaser, and create a 400x490px game
 //var game = new Phaser.Game(400, 490, Phaser.AUTO, 'gameDiv');
-var game = new Phaser.Game(400, 490, Phaser.AUTO, 'gameDiv');
+var game = new Phaser.Game(windowWidth, windowHeight, Phaser.AUTO, 'gameDiv');
 
 // Create our 'main' state that will contain the game
 var mainState = {
@@ -52,6 +54,10 @@ var mainState = {
         game.load.image('OneBalloon', 'assets/OneBalloon.png');
         game.load.image('TwoBalloons', 'assets/TwoBalloons.png');
         game.load.image('ThreeBalloons', 'assets/ThreeBalloons.png');
+
+        game.load.image('oneAlone', 'assets/oneAlone.png');
+        game.load.image('twoAlone', 'assets/twoAlone.png');
+        game.load.image('threeAlone', 'assets/threeAlone.png');
 
         game.load.image('cannon', 'assets/cannon.png');
         game.load.image('bullet', 'assets/bullet.png');
@@ -116,6 +122,23 @@ var mainState = {
         this.threeBalloons.enableBody = true;
         this.threeBalloons.createMultiple(500, 'zombieSpritesheet', 3);
 
+        /*
+        Balloons without Zombies
+        */
+        this.oneAlone = game.add.group();
+        this.oneAlone.enableBody = true;
+        this.oneAlone.createMultiple(500, 'oneAlone');
+        this.oneAlone.setAll('body.velocity.y', -100);
+
+        this.twoAlone = game.add.group();
+        this.twoAlone.enableBody = true;
+        this.twoAlone.createMultiple(500, 'twoAlone');
+        this.twoAlone.setAll('body.velocity.y', -200);
+
+        this.threeAlone = game.add.group();
+        this.threeAlone.enableBody = true;
+        this.threeAlone.createMultiple(500, 'threeAlone');
+        this.threeAlone.setAll('body.velocity.y', -300);
 
         bullets = game.add.group();
         bullets.createMultiple(500, 'bullet', 0, false);
@@ -187,13 +210,21 @@ var mainState = {
             {
                 this.shoot();
             }
-            else if (this.game.time.now - this.cooldown > 3000)
+            else if (this.game.time.now - this.cooldown > 1500)
             {
                 this.shotCounter = 6;
                 this.labelShotCounter.text = this.shotCounter;
                 this.shoot();
             }
         }
+
+        this.oneBalloon.forEach(function(zombie){
+            if (zombie.body.y < this.cloud.body.y - 200)
+            {
+                zombie.body.velocity.y = 0;
+                zombie.body.velocity.x = -50;
+            }
+        }, this, true);
     },
 
 
@@ -207,23 +238,90 @@ var mainState = {
 
     oneBalloonHandler: function(zombie, bullet)
     {            
-        zombie.kill();
-        bullet.kill();
-        this.addOneZombie(zombie.x, zombie.y, 0);
+        var Balloon_Start = zombie.body.bottom - 125;  // Estimate of where balloons start between 1-150
+        var Balloon_End = zombie.body.bottom - 150 // because balloons are 25px, so 25 more than start
+
+        var Zombie_Start = zombie.body.bottom // should be the very bottom of the sprite... might need
+                                // to double check that is so
+        var Zombie_End = Zombie_Start - 50 // because zombie's sprite is 50px
+
+        /*
+        if (bullet.body.y - 20 <= Balloon_Start)
+        {
+            zombie.kill();
+            bullet.kill();
+            this.addOneZombie(zombie.x, zombie.y, 0);
+        }
+        */
+
+        if (bullet.body.y <= Balloon_Start && bullet.body.y >= Balloon_End)
+        {
+            zombie.kill();
+            bullet.kill();
+            this.addOneZombie(zombie.x, zombie.y, 0);
+        }
+        else if (bullet.body.y <= Zombie_Start && bullet.body.y >= Zombie_End )
+        {
+            zombie.kill();
+            bullet.kill();
+            var _z = this.oneAlone.getFirstDead();
+            _z.reset(zombie.x, zombie.y);
+            _z.body.velocity.y = -100;
+        }
     },
 
     twoBalloonHandler: function(zombie, bullet)
     {            
-        zombie.kill();
-        bullet.kill();
-        this.addOneZombie(zombie.x, zombie.y, 1);
+        var BulletY = bullet.body.y;
+
+        var Balloon_Start = zombie.body.bottom - 125;  // Estimate of where balloons start between 1-150
+        var Balloon_End = zombie.body.bottom - 150 // because balloons are 25px, so 25 more than start
+
+        var Zombie_Start = zombie.body.bottom // should be the very bottom of the sprite... might need
+                                // to double check that is so
+        var Zombie_End = Zombie_Start - 50 // because zombie's sprite is 50px
+
+        if (BulletY <= Balloon_Start && BulletY >= Balloon_End)
+        {
+            zombie.kill();
+            bullet.kill();
+            this.addOneZombie(zombie.x, zombie.y, 1);
+        }
+        else if (bullet.body.y <= Zombie_Start && bullet.body.y >= Zombie_End )
+        {
+            zombie.kill();
+            bullet.kill();
+            var _z = this.twoAlone.getFirstDead();
+            _z.reset(zombie.x, zombie.y);
+            _z.body.velocity.y = -200;
+        }
     },
 
     threeBalloonHandler: function(zombie, bullet)
     {            
-        zombie.kill();
-        bullet.kill();
-        this.addOneZombie(zombie.x, zombie.y, 2);
+        var BulletY = bullet.body.y;
+
+        var Balloon_Start = zombie.body.bottom - 125;  // Estimate of where balloons start between 1-150
+        var Balloon_End = zombie.body.bottom - 150 // because balloons are 25px, so 25 more than start
+
+        var Zombie_Start = zombie.body.bottom // should be the very bottom of the sprite... might need
+                                // to double check that is so
+        var Zombie_End = Zombie_Start - 50 // because zombie's sprite is 50px
+
+        if (BulletY <= Balloon_Start && BulletY >= Balloon_End)
+        {
+            zombie.kill();
+            bullet.kill();
+            this.addOneZombie(zombie.x, zombie.y, 2);
+        }
+        else if (bullet.body.y <= Zombie_Start && bullet.body.y >= Zombie_End )
+        {
+            zombie.kill();
+            bullet.kill();
+            var _z = this.threeAlone.getFirstDead();
+            _z.reset(zombie.x, zombie.y);
+            _z.body.velocity.y = -300;
+        }
     },
 
 
@@ -264,6 +362,7 @@ var mainState = {
             _zombie.reset(x, y);
 
             _zombie.body.velocity.y = rate;
+            _zombie.body.velocity.x = 0;
 
             _zombie.checkWorldBounds = true;
             _zombie.outOfBoundsKill = true;
@@ -302,8 +401,8 @@ var mainState = {
 
         for (var i = 0; i < R_NumberOfZombies; i++)
         {
-            var xCoord = Math.floor(Math.random() * 300) + 150;
-            var yCoord = Math.floor(Math.random() * 50) + 420;
+            var xCoord = Math.floor(Math.random() * (windowWidth - 300)) + 150;
+            var yCoord = Math.floor(Math.random() * (windowHeight - 150)) + 300;
 
             R_TypeOfZombie = randomGenerator(typeWeights, typeOfZombies)
 
@@ -324,17 +423,16 @@ var mainState = {
         //weights = [0.025, 0.1, 0.15, 0.225, 0.5];
         for (var i = 0; i < weights.length; i++)
         {
-            // 5th is still greater than 4th 
-            if (weights[4] >= 29)
+            // 1st is still greater than 2nd
+            if (weights[0] >= weights[1])
             {
-                // Take 5 away from 5th Index 
+                // Take 5 away from 1 
                 weights[4] -= 5;
 
                 // Take from the last, give to second to last
                 weights[3] += 5;
             }
             // 4th is still greater than 3rd
-            /*
             else if (weights[2] < 30)
             {
                 weights[3] -= 5;
@@ -344,7 +442,7 @@ var mainState = {
             {
                 weights[3] -= 5;
                 weights[2] += 5;
-            }*/
+            }
         }
     },
 
@@ -365,7 +463,8 @@ var mainState = {
 
                 game.physics.arcade.enable(bullet);
 
-                bullet.body.rotation = cannon.rotation + game.math.degToRad(-90);
+                bullet.body.rotation = 
+                    cannon.rotation + game.math.degToRad(-90);
 
                 var magnitude = 500;
                 var angle = bullet.body.rotation + Math.PI / 2;
@@ -402,7 +501,10 @@ function resizeGame()
     }
 }
 
-$(window).resize(function() {window.resizeGame(); });
+$(window).resize(function() { window.resizeGame(); });
 // Add and start the 'main' state to start the game
 game.state.add('main', mainState);
+game.state.add('small', mainState);
+game.state.add('medium', mediumState);
+game.state.add('large', largeState);
 game.state.start('main');
