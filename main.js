@@ -14,7 +14,6 @@ var zombieAmount = 0;
 var zombieCounter = 0;
 
 var cannon;
-var bullets;
 var angle = 0;
 var fireRate = 500;
 var nextFire = 0;
@@ -56,7 +55,7 @@ var mainState = {
         game.load.image('threeAlone', 'assets/threeAlone.png');
 
         game.load.image('cannon', 'assets/cannon.png');
-        game.load.image('bullet', 'assets/bullet.png');
+        game.load.image('bullet', 'assets/Bullet.png');
     },
 
 
@@ -136,8 +135,8 @@ var mainState = {
         this.threeAlone.createMultiple(500, 'threeAlone');
         this.threeAlone.setAll('body.velocity.y', -300);
 
-        bullets = game.add.group();
-        bullets.createMultiple(500, 'bullet', 0, false);
+        this.bullets = game.add.group();
+        this.bullets.createMultiple(500, 'bullet', 0, false);
 
         cannon = game.add.sprite(150, 235, 'cannon');
         cannon.anchor.set(0, 0.5);
@@ -187,13 +186,13 @@ var mainState = {
         game.physics.arcade.overlap(this.man, this.pipes, this.restartGame,
             null, this);
 
-        game.physics.arcade.overlap(this.oneBalloon, bullets, 
+        game.physics.arcade.overlap(this.oneBalloon, this.bullets, 
             this.oneBalloonHandler, null, this); 
 
-        game.physics.arcade.overlap(this.twoBalloons, bullets, 
+        game.physics.arcade.overlap(this.twoBalloons, this.bullets, 
             this.twoBalloonHandler, null, this); 
 
-        game.physics.arcade.overlap(this.threeBalloons, bullets, 
+        game.physics.arcade.overlap(this.threeBalloons, this.bullets, 
             this.threeBalloonHandler, null, this); 
 
         var dx = game.input.activePointer.worldX - cannon.x;
@@ -469,7 +468,7 @@ var mainState = {
         {
             nextFire = game.time.now + fireRate;
 
-            var bullet = bullets.getFirstExists(false);
+            var bullet = this.bullets.getFirstExists(false);
 
             if (bullet)
             {
