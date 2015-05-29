@@ -55,7 +55,7 @@ var mainState = {
         game.load.image('threeAlone', 'assets/threeAlone.png');
 
         game.load.image('cannon', 'assets/cannon.png');
-        game.load.image('bullet', 'assets/bullet.png');
+        game.load.image('bullet', 'assets/projectile.png');
     },
 
 
