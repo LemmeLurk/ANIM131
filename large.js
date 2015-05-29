@@ -10,13 +10,13 @@ var numberWeights = [0.59, 0.3, 0.07, 0.03, 0.01];
 var typeOfZombies = [1, 2, 3];
 var typeWeights = [0.60, 0.30, 0.1]; 
 
-var zombieAmount = 0;
+var zombieAmount = 1000;
 var zombieCounter = 0;
 
 var cannon;
 var bullets;
 var angle = 0;
-var fireRate = 500;
+var fireRate = 100;
 var nextFire = 0;
 
 var windowWidth = $(window).width();
@@ -44,7 +44,7 @@ var mainState = {
             'assets/BalloonSpritesheet.png', 50, 150);
 
         // Load the zombie sprite
-        //game.load.image('torso', 'assets/Zombie.png');
+        game.load.image('torso', 'assets/Zombie.png');
 
         // Load the Balloon sprites
         game.load.image('OneBalloon', 'assets/OneBalloon.png');
@@ -221,22 +221,6 @@ var mainState = {
                 zombie.body.velocity.x = -50;
             }
         }, this, true);
-
-        this.twoBalloons.forEach(function(zombie){
-            if (zombie.body.y < this.cloud.body.y - 200)
-            {
-                zombie.body.velocity.y = 0;
-                zombie.body.velocity.x = -70;
-            }
-        }, this, true);
-
-        this.threeBalloons.forEach(function(zombie){
-            if (zombie.body.y < this.cloud.body.y - 200)
-            {
-                zombie.body.velocity.y = 0;
-                zombie.body.velocity.x = -90;
-            }
-        }, this, true);
     },
 
 
@@ -256,10 +240,6 @@ var mainState = {
         var Zombie_Start = zombie.body.bottom // should be the very bottom of the sprite... might need
                                 // to double check that is so
         var Zombie_End = Zombie_Start - 50 // because zombie's sprite is 50px
-
-        var Zombie_Start = zombie.body.bottom - 23;
-
-        var Zombie_End = Zombie_Start - 11;
 
         /*
         if (bullet.body.y - 20 <= Balloon_Start)
@@ -520,23 +500,7 @@ function resizeGame()
 $(window).resize(function() { window.resizeGame(); });
 // Add and start the 'main' state to start the game
 game.state.add('main', mainState);
-//game.state.add('small', mainState);
-//game.state.add('medium', mediumState);
-//game.state.add('large', largeState);
+game.state.add('small', mainState);
+game.state.add('medium', mediumState);
+game.state.add('large', largeState);
 game.state.start('main');
-
-//We use window.game because we want it to be accessible from everywhere
-/*
-window.game = new Phaser.Game(800, 600, Phaser.AUTO);
-
-game.globals = {
-    //Add variables here that you want to access globally
-    //score: 0 could be accessed as game.globals.score for example
-};
-
-game.state.add('play', require('./states/play.js'));
-game.state.add('load', require('./states/load.js'));
-game.state.add('menu', require('./states/menu.js'));
-game.state.add('boot', require('./states/boot.js'));
-game.state.start('boot');
-*/
