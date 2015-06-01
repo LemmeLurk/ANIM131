@@ -8,8 +8,8 @@ var numberWeights = [0.59, 0.3, 0.07, 0.03, 0.01];
 var typeOfZombies = [1, 2, 3];
 var typeWeights = [0.60, 0.30, 0.1]; 
 
-var zombieAmount = 0;
-var zombieCounter = 0;
+var killCounter = 0;
+var zombieCounter = 100;
 
 var angle = 0;
 var fireRate = 500;
@@ -20,15 +20,7 @@ var rateOfSpawn = 1500;
 var dx;
 var dy;
 
-var mouseX;
-var mouseY;
-
-var MAX_MOUSE_X_UP = 11;
-var MAX_MOUSE_Y_UP = -50;
-
-var MAX_MOUSE_X_DOWN = 11;
-//var MAX_MOUSE_Y_DOWN = 31;
-var MAX_MOUSE_Y_DOWN = 50;
+var cloudWidth = 718;
 
 var windowWidth = $(window).width();
 var windowHeight = $(window).height();
@@ -68,7 +60,8 @@ var mainState = {
 
         game.load.image('handgun', 'assets/handgun.png');
         game.load.image('bullet', 'assets/projectile.png');
-        game.load.image('gauge', 'assets/gauge.png');
+
+        game.load.image('WaveGauge', 'assets/WaveGauge.png');
     },
 
 
@@ -83,7 +76,8 @@ var mainState = {
         /*
         Cloud Object
         */
-        this.cloud = this.game.add.sprite(-100, 200, 'cloud');
+        var cloudX = this.game.world.centerX - (cloudWidth/2);
+        this.cloud = this.game.add.sprite(cloudX, 200, 'cloud');
 
         this.game.physics.arcade.enable(this.cloud);
 
@@ -103,7 +97,8 @@ var mainState = {
             /*
             Player
             */
-        this.container.player = this.game.add.sprite(100, 210, 'player');
+        var playerX = (cloudWidth/2) + cloudX;
+        this.container.player = this.game.add.sprite(playerX, 210, 'player');
         this.container.player.anchor.setTo(0.5);
         this.container.addChild(this.container.player);
         this.container.player.enableBody = true;
@@ -112,7 +107,7 @@ var mainState = {
             Handgun
             */
         //this.container.handgun = this.game.add.sprite(150, 235, 'handgun');
-        this.container.handgun = this.game.add.sprite(120, 215, 'handgun');
+        this.container.handgun = this.game.add.sprite(playerX+20, 215, 'handgun');
         this.container.handgun.anchor.set(0,.5);
         this.container.addChild(this.container.handgun);
         this.container.handgun.enableBody = true;
@@ -120,29 +115,11 @@ var mainState = {
 
         this.container.handgun.angle = 0;
 
-                /*
-                    Aiming GUI
-                */
-        this.gauge = game.make.sprite(0, 0, 'gauge');
-        this.gauge.anchor.set(0.5);
-
-        //  This is the BitmapData we're going to be drawing to
-        bmd = game.add.bitmapData(this.game.width, this.game.height);
-        bmd.addToWorld();
-
-        //  Disables anti-aliasing when we draw sprites to the BitmapData
-        bmd.smoothed = false;
-
-        this.game.input.addMoveCallback(this.paint, this);
 
             /*
-            CONTAINER PROPERTIES
+            CONTAINER PHYSICS
             */
         this.game.physics.arcade.enable(this.container, Phaser.Physics.ARCADE);
-
-        this.container.speed = 250;
-
-        this.container.walkingX = false;
 
         this.game.physics.arcade.enable(this.container.player, 
             Phaser.Physics.ARCADE);
@@ -194,22 +171,22 @@ var mainState = {
 
 
         /*
-        Balloons without Zombies
+        Balloons and Zombies Without Heads
         */
         this.oneAlone = game.add.group();
         this.oneAlone.enableBody = true;
         this.oneAlone.createMultiple(50, 'oneAlone');
-        this.oneAlone.setAll('body.velocity.y', -100);
+        this.oneAlone.setAll('body.velocity.y', -20);
 
         this.twoAlone = game.add.group();
         this.twoAlone.enableBody = true;
         this.twoAlone.createMultiple(50, 'twoAlone');
-        this.twoAlone.setAll('body.velocity.y', -200);
+        this.twoAlone.setAll('body.velocity.y', -40);
 
         this.threeAlone = game.add.group();
         this.threeAlone.enableBody = true;
         this.threeAlone.createMultiple(50, 'threeAlone');
-        this.threeAlone.setAll('body.velocity.y', -300);
+        this.threeAlone.setAll('body.velocity.y', -60);
 
 
         /*
@@ -221,20 +198,19 @@ var mainState = {
             bullet.enableBody = true;
             this.game.physics.arcade.enable(bullet, 
                 Phaser.Physics.ARCADE);
-
         });
 
 
         /*
         Timers
         */
-        // Add timer :: call addRowOfPipes() every 1.5sec
        // this.timer = game.time.events.loop(3500, this.addZombieHorde, this);
         this.timer = game.time.events.loop(rateOfSpawn, 
             this.addZombieHorde, this);
 
 
-        this.reloadTimer = this.game.time.create(this.game, false);
+        this.reloadTimer = 
+            this.game.time.create(this.game, false);
 
 
         this.cooldown = this.game.time.now;
@@ -263,6 +239,14 @@ var mainState = {
         this.labelShotCounter = 
             game.add.text(200, 200, "6", 
                 {font: "30px Arial", fill: "#ffffff"});
+
+        /*
+        Zombie Wave Gauge
+        */
+        this.WaveGauge = this.game.add.sprite(0,0,'WaveGauge');
+        this.WaveGauge.cropEnabled = true;
+        this.WaveGauge.crop.width = 
+            (killCounter / 100) * this.WaveGauge.width;
     },
 
     update: function () 
@@ -270,9 +254,9 @@ var mainState = {
         /*
         Aiming / Shooting
         */
-        mouseX = dx = this.game.input.activePointer.worldX - this.container.handgun.x;
-        mouseY = dy = this.game.input.activePointer.worldY - this.container.handgun.y;
-        if (dy <= MAX_MOUSE_Y_DOWN && dy >= MAX_MOUSE_Y_UP)
+        dx = this.game.input.activePointer.worldX - this.container.handgun.x;
+        dy = this.game.input.activePointer.worldY - this.container.handgun.y;
+
         this.container.handgun.rotation = Math.atan2(dy, dx);
 
         if (this.game.input.activePointer.isDown)
@@ -365,12 +349,22 @@ var mainState = {
 
         if (bullet.body.y <= Balloon_Start && bullet.body.y >= Balloon_End)
         {
+            killCounter++;
+            // Modify the Gauge to reflect current stats
+            this.WaveGauge.crop.width = 
+                (killCounter / 100) * this.WaveGauge.width;
+
             zombie.kill();
             bullet.kill();
             this.addOneZombie(zombie.x, zombie.y, 0);
         }
         else if (bullet.body.y <= Zombie_Start && bullet.body.y >= Zombie_End )
         {
+            // This is a confirmed kill
+            killCounter++;
+
+            this.WaveGauge.crop.width = 
+                (killCounter / 100) * this.WaveGauge.width;
             zombie.kill();
             bullet.kill();
             var _z = this.oneAlone.getFirstDead();
@@ -398,6 +392,11 @@ var mainState = {
         }
         else if (bullet.body.y <= Zombie_Start && bullet.body.y >= Zombie_End )
         {
+            // This is a confirmed kill
+            killCounter++;
+            // Update Gauge 
+            this.WaveGauge.crop.width = 
+                (killCounter / 100) * this.WaveGauge.width;
             zombie.kill();
             bullet.kill();
             var _z = this.twoAlone.getFirstDead();
@@ -425,6 +424,12 @@ var mainState = {
         }
         else if (bullet.body.y <= Zombie_Start && bullet.body.y >= Zombie_End )
         {
+            // This is a confirmed kill
+            killCounter++;
+            // Update Gauge 
+            this.WaveGauge.crop.width = 
+                (killCounter / 100) * this.WaveGauge.width;
+
             zombie.kill();
             bullet.kill();
             var _z = this.threeAlone.getFirstDead();
@@ -506,6 +511,7 @@ var mainState = {
         };
 
         R_NumberOfZombies = randomGenerator(numberWeights, numberOfZombies);
+        zombieCounter -= R_NumberOfZombies;
 
         for (var i = 0; i < R_NumberOfZombies; i++)
         {
@@ -562,30 +568,6 @@ var mainState = {
                 bullet.body.velocity.x = magnitude * Math.cos(angle);
                 bullet.body.velocity.y = magnitude * Math.sin(angle);
             }
-        }
-    },
-
-    paint: function(pointer, x, y)
-    {
-        var newX = this.container.handgun.body.x + 50; 
-        var newY = this.container.handgun.body.y;
-
-        if (mouseY < MAX_MOUSE_Y_UP)
-        {
-            bmd.draw(this.gauge, 
-                newX, mouseY - MAX_MOUSE_Y_UP);
-            console.log('mouseY < MAX');
-        }
-        else if (mouseY > MAX_MOUSE_Y_DOWN)
-        {
-            bmd.draw(this.gauge, 
-                newX, newY + MAX_MOUSE_Y_DOWN);
-            console.log('mouseY > MAX');
-        }
-        else
-        {
-            bmd.draw(this.gauge, newX, newY + mouseY);
-            console.log('neither');
         }
     },
 };
