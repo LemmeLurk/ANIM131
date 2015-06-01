@@ -15,16 +15,20 @@ var angle = 0;
 var fireRate = 500;
 var nextFire = 0;
 
-var dx = 0.0;
-var dy = 0.0;
+var rateOfSpawn = 1500;
 
-var MAX_DY_UP = -0.19200000000000006;
-var MAX_DY_DOWN = 0.19200000000000006;
+var dx;
+var dy;
 
-var MAX_GUN_ROTATION_UP = -1.2480000000000002;
-var MAX_GUN_ROTATION_DOWN = 1.2480000000000002;
+var mouseX;
+var mouseY;
 
-var GUN_ROTATION = null;
+var MAX_MOUSE_X_UP = 11;
+var MAX_MOUSE_Y_UP = -50;
+
+var MAX_MOUSE_X_DOWN = 11;
+//var MAX_MOUSE_Y_DOWN = 31;
+var MAX_MOUSE_Y_DOWN = 50;
 
 var windowWidth = $(window).width();
 var windowHeight = $(window).height();
@@ -64,6 +68,7 @@ var mainState = {
 
         game.load.image('handgun', 'assets/handgun.png');
         game.load.image('bullet', 'assets/projectile.png');
+        game.load.image('gauge', 'assets/gauge.png');
     },
 
 
@@ -115,6 +120,20 @@ var mainState = {
 
         this.container.handgun.angle = 0;
 
+                /*
+                    Aiming GUI
+                */
+        this.gauge = game.make.sprite(0, 0, 'gauge');
+        this.gauge.anchor.set(0.5);
+
+        //  This is the BitmapData we're going to be drawing to
+        bmd = game.add.bitmapData(this.game.width, this.game.height);
+        bmd.addToWorld();
+
+        //  Disables anti-aliasing when we draw sprites to the BitmapData
+        bmd.smoothed = false;
+
+        this.game.input.addMoveCallback(this.paint, this);
 
             /*
             CONTAINER PROPERTIES
@@ -132,7 +151,6 @@ var mainState = {
             Phaser.Physics.ARCADE);
 
 
-
         /*
         Zombies :: No Balloons
         */
@@ -140,6 +158,9 @@ var mainState = {
         this.zombie.enableBody = true;
         this.zombie.createMultiple(50, 'zombieSpritesheet', 0);
         this.zombie.setAll('body.gravity.y', 1000);
+        this.zombie.forEach(function(zombie){
+            zombie.rate = 0;
+        });
 
         /*
         Zombies :: 1 Balloon
@@ -209,7 +230,7 @@ var mainState = {
         */
         // Add timer :: call addRowOfPipes() every 1.5sec
        // this.timer = game.time.events.loop(3500, this.addZombieHorde, this);
-        this.timer = game.time.events.loop(1500, 
+        this.timer = game.time.events.loop(rateOfSpawn, 
             this.addZombieHorde, this);
 
 
@@ -249,9 +270,10 @@ var mainState = {
         /*
         Aiming / Shooting
         */
-        //dx = this.game.input.activePointer.worldX - this.container.handgun.x;
-        //dy = this.game.input.activePointer.worldY - this.container.handgun.y;
-        //this.container.handgun.rotation = Math.atan2(dy, dx);
+        mouseX = dx = this.game.input.activePointer.worldX - this.container.handgun.x;
+        mouseY = dy = this.game.input.activePointer.worldY - this.container.handgun.y;
+        if (dy <= MAX_MOUSE_Y_DOWN && dy >= MAX_MOUSE_Y_UP)
+        this.container.handgun.rotation = Math.atan2(dy, dx);
 
         if (this.game.input.activePointer.isDown)
         {
@@ -264,126 +286,6 @@ var mainState = {
                 this.shotCounter = 6;
                 this.labelShotCounter.text = this.shotCounter;
                 this.shoot();
-            }
-        }
-
-        if (this.keyDown('SPACEBAR'))
-        {
-            this.shoot2();
-        }
-
-        /*
-        Give the Player Movement
-        */
-        if (this.keyDown('A') || this.keyDown('LEFT'))
-        {
-            this.container.body.velocity.x = -this.container.speed;
-            this.container.walkingX = true;
-            if (this.game.input.activePointer.isDown)
-            {
-                if (this.shotCounter > 0)
-                {
-                    this.shoot();
-                }
-                else if (this.game.time.now - this.cooldown > 1500)
-                {
-                    this.shotCounter = 6;
-                    this.labelShotCounter.text = this.shotCounter;
-                    this.shoot();
-                }
-            }
-        }
-        else if (this.keyDown('D') || this.keyDown('RIGHT'))
-        {
-            this.container.body.velocity.x = this.container.speed;
-            this.container.walkingX = true;
-            if (this.game.input.activePointer.isDown)
-            {
-                if (this.shotCounter > 0)
-                {
-                    this.shoot();
-                }
-                else if (this.game.time.now - this.cooldown > 1500)
-                {
-                    this.shotCounter = 6;
-                    this.labelShotCounter.text = this.shotCounter;
-                    this.shoot();
-                }
-            }
-        }
-        else
-        {
-            this.container.body.velocity.x = 0;
-            this.container.walkingX = false;
-            if (this.game.input.activePointer.isDown)
-            {
-                if (this.shotCounter > 0)
-                {
-                    this.shoot();
-                }
-                else if (this.game.time.now - this.cooldown > 1500)
-                {
-                    this.shotCounter = 6;
-                    this.labelShotCounter.text = this.shotCounter;
-                    this.shoot();
-                }
-            }
-        }
-       
-
-        if (this.keyDown('W') || this.keyDown('UP'))
-        {
-            if (this.container.handgun.rotation >=
-                MAX_GUN_ROTATION_UP)
-            {
-                if (dy >= MAX_DY_UP)
-                {
-                    dy -= 0.016;
-
-                    this.container.handgun.rotation = 
-                        this.container.handgun.rotation + dy;
-
-                       console.log('dy: ' + dy + ' rotation: ' + 
-                        this.container.handgun.rotation);
-                }
-                else
-                {
-                    dy = -0.016;
-                }
-            }
-            /*
-            else
-            {
-                console.log('________________ HIT END ________________________');
-                console.log('________________ HIT END ________________________');
-                console.log('dy: ' + dy + ' rotation: ' + 
-                    this.container.handgun.rotation);
-                console.log('________________ HIT END ________________________');
-                console.log('________________ HIT END ________________________');
-                console.log('________________ HIT END ________________________');
-            } */
-
-        }
-        else if (this.keyDown('S') || this.keyDown('DOWN'))
-        {
-
-            if (this.container.handgun.rotation <=
-                MAX_GUN_ROTATION_DOWN)
-            {
-                if (dy <= MAX_DY_DOWN)
-                {
-                    dy += 0.016;
-
-                    this.container.handgun.rotation =  
-                        this.container.handgun.rotation + dy;
-
-                    console.log('dy: ' + dy + ' rotation: ' + 
-                        this.container.handgun.rotation);
-                }
-                else
-                {
-                    dy = 0.016;
-                }
             }
         }
 
@@ -402,9 +304,6 @@ var mainState = {
 
         this.game.physics.arcade.overlap(this.threeBalloons, this.bullets, 
             this.threeBalloonHandler, null, this); 
-
-        this.game.physics.arcade.overlap(this.zombie, this.cloud, 
-            this.zombieHandler, null, this); 
 
 
         /*
@@ -432,14 +331,6 @@ var mainState = {
             {
                 zombie.body.velocity.y = 0;
                 zombie.body.velocity.x = -90;
-            }
-        }, this, true);
-
-        this.zombie.forEach(function(zombie){
-            if (zombie.body.y === 210)
-            {
-                zombie.body.gravity.y = 0;
-                zombie.body.velocity.x = -200;
             }
         }, this, true);
     },
@@ -471,15 +362,6 @@ var mainState = {
         var Zombie_Start = zombie.body.bottom - 23;
 
         var Zombie_End = Zombie_Start - 11;
-
-        /*
-        if (bullet.body.y - 20 <= Balloon_Start)
-        {
-            zombie.kill();
-            bullet.kill();
-            this.addOneZombie(zombie.x, zombie.y, 0);
-        }
-        */
 
         if (bullet.body.y <= Balloon_Start && bullet.body.y >= Balloon_End)
         {
@@ -649,33 +531,6 @@ var mainState = {
         this.oneBalloon.rate *= 0.5;
         this.twoBalloons.rate *= 0.5;
         this.threeBalloons.rate *= 0.5;
-
-        //weights = [0.025, 0.1, 0.15, 0.225, 0.5];
-        /*
-        for (var i = 0; i < weights.length; i++)
-        {
-            // 1st is still greater than 2nd
-            if (weights[0] >= weights[1])
-            {
-                // Take 5 away from 1 
-                weights[4] -= 5;
-
-                // Take from the last, give to second to last
-                weights[3] += 5;
-            }
-            // 4th is still greater than 3rd
-            else if (weights[2] < 30)
-            {
-                weights[3] -= 5;
-                weights[2] += 5;
-            }
-            else if (weights[1] < 60)
-            {
-                weights[3] -= 5;
-                weights[2] += 5;
-            }
-        }
-        */
     },
 
 
@@ -691,101 +546,47 @@ var mainState = {
             {
                 bullet.frame = game.rnd.integerInRange(0, 6);
                 bullet.exists = true;
-                bullet.position.set(this.container.handgun.body.x, 
-                    this.container.handgun.body.y - dy);
+                bullet.position.set(
+                    this.container.handgun.x, 
+                    this.container.handgun.y);
 
-                game.physics.arcade.enable(bullet);
+                this.game.physics.arcade.enable(bullet);
 
                 bullet.body.rotation = 
-                    game.math.degToRad(dy);
+                this.container.handgun.rotation + 
+                this.game.math.degToRad(-90);
 
                 var magnitude = 500;
                 var angle = bullet.body.rotation + Math.PI / 2;
 
                 bullet.body.velocity.x = magnitude * Math.cos(angle);
                 bullet.body.velocity.y = magnitude * Math.sin(angle);
-
-                this.shotCounter -= 1;
-                this.labelShotCounter.text = this.shotCounter;
-
-                if (this.shotCounter === 0)
-                {
-                    this.labelShotCounter.text = '6';
-                    this.cooldown = this.game.time.now;
-                }
             }
         }
     },
 
-    shoot2: function () 
+    paint: function(pointer, x, y)
     {
-        if (game.time.now > nextFire)
+        var newX = this.container.handgun.body.x + 50; 
+        var newY = this.container.handgun.body.y;
+
+        if (mouseY < MAX_MOUSE_Y_UP)
         {
-            bullet = this.bullets.getFirstExists(false);
-
-            if (bullet)
-            {
-                bullet.reset(
-                    this.container.handgun.body.x + 16, 
-                    this.container.handgun.body.y + 16);
-                bullet.lifespan = 2000;
-                bullet.rotation = this.container.handgun.rotation;
-                this.game.physics.arcade.velocityFromRotation(
-                    this.container.handgun.rotation, 400, 
-                    bullet.body.velocity);
-
-                nextFire = game.time.now + fireRate;
-            }
+            bmd.draw(this.gauge, 
+                newX, mouseY - MAX_MOUSE_Y_UP);
+            console.log('mouseY < MAX');
         }
-
-        /*
-        if (game.time.now > nextFire)
+        else if (mouseY > MAX_MOUSE_Y_DOWN)
         {
-            nextFire = game.time.now + fireRate;
-
-            var bullet = this.bullets.getFirstExists(false);
-
-            if (bullet)
-            {
-                bullet.frame = game.rnd.integerInRange(0, 6);
-                bullet.exists = true;
-                //bullet.position.set(this.container.handgun.body.x, 
-                //    this.container.handgun.body.y);
-
-                bullet.reset(this.container.handgun.body.x,
-                    this.container.handgun.body.y);
-
-                this.game.physics.arcade.enable(bullet);
-
-                bullet.body.rotation = 
-                    this.container.handgun.rotation 
-                    + this.game.math.degToRad(-90);
-
-                var magnitude = 500;
-                //var angle = bullet.body.rotation + Math.PI / 2;
-                bullet.body.angle = 
-                        bullet.body.rotation + Math.PI / 2;
-
-                 bullet.body.velocity.x = magnitude * Math.cos(angle);
-                bullet.body.velocity.y = magnitude * Math.sin(angle);
-
-                this.shotCounter -= 1;
-                this.labelShotCounter.text = this.shotCounter;
-
-                if (this.shotCounter === 0)
-                {
-                    this.labelShotCounter.text = '6';
-                    this.cooldown = this.game.time.now;
-                }
-            }
+            bmd.draw(this.gauge, 
+                newX, newY + MAX_MOUSE_Y_DOWN);
+            console.log('mouseY > MAX');
         }
-        */
-    },
-
-    // Shorten isDown inputs
-    keyDown: function (KEY) 
-    { 
-        return eval('game.input.keyboard.isDown(Phaser.Keyboard.' + KEY +')');
+        else
+        {
+            bmd.draw(this.gauge, newX, newY + mouseY);
+            console.log('neither');
+        }
     },
 };
 
