@@ -243,7 +243,13 @@ var mainState = {
         /*
         Zombie Wave Gauge
         */
-        this.WaveGauge = this.game.add.sprite(0,0,'WaveGauge');
+        this.WaveGaugeText = this.game.add.text(
+                0, this.game.height - 20, "Wave: ",
+                {font: "20px Arial", fill: "#ffffff"});
+
+        this.WaveGauge = this.game.add.sprite(
+            this.WaveGaugeText.width, this.game.height - 10,'WaveGauge');
+
         this.WaveGauge.cropEnabled = true;
         this.WaveGauge.crop.width = 
             (killCounter / 100) * this.WaveGauge.width;
@@ -251,6 +257,10 @@ var mainState = {
 
     update: function () 
     {
+        if (killCounter === 100)
+        {
+            alert('Game Over');
+        }
         /*
         Aiming / Shooting
         */
@@ -351,8 +361,7 @@ var mainState = {
         {
             killCounter++;
             // Modify the Gauge to reflect current stats
-            this.WaveGauge.crop.width = 
-                (killCounter / 100) * this.WaveGauge.width;
+            this.WaveGauge.width--;
 
             zombie.kill();
             bullet.kill();
@@ -363,8 +372,7 @@ var mainState = {
             // This is a confirmed kill
             killCounter++;
 
-            this.WaveGauge.crop.width = 
-                (killCounter / 100) * this.WaveGauge.width;
+            this.WaveGauge.width--;
             zombie.kill();
             bullet.kill();
             var _z = this.oneAlone.getFirstDead();
@@ -395,8 +403,7 @@ var mainState = {
             // This is a confirmed kill
             killCounter++;
             // Update Gauge 
-            this.WaveGauge.crop.width = 
-                (killCounter / 100) * this.WaveGauge.width;
+            this.WaveGauge.width--;
             zombie.kill();
             bullet.kill();
             var _z = this.twoAlone.getFirstDead();
@@ -427,8 +434,7 @@ var mainState = {
             // This is a confirmed kill
             killCounter++;
             // Update Gauge 
-            this.WaveGauge.crop.width = 
-                (killCounter / 100) * this.WaveGauge.width;
+            this.WaveGauge.width--;
 
             zombie.kill();
             bullet.kill();
