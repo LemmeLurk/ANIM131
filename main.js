@@ -3,10 +3,33 @@
 
 // Global helper members
 var numberOfZombies = [1, 2, 3, 4, 5];
-var numberWeights = [0.59, 0.3, 0.07, 0.03, 0.01];
+var numberWeights = {
+    'first': [0.59, 0.3, 0.07, 0.03, 0.01],
+    'second': [0.49, 0.4, 0.07, 0.03, 0.01],
+    'third': [0.39, 0.4, 0.17, 0.03, 0.01],
+    'fourth': [0.29, 0.4, 0.17, 0.13, 0.01],
+    'fifth': [0.19, 0.4, 0.17, 0.13, 0.11],
+    'sixth': [0.09, 0.5, 0.17, 0.13, 0.11],
+    'seventh': [0.09, 0.4, 0.27, 0.13, 0.11],
+    'eigth': [0.09, 0.3, 0.27, 0.23, 0.11],
+    'ninth': [0.09, 0.2, 0.27, 0.23, 0.21],
+    'tenth': [0.09, 0.1, 0.27, 0.23, 0.31]
+};
+
+var _currentNumberWeights = numberWeights.first;
+
+var _NumberWeightCount = 1;
 
 var typeOfZombies = [1, 2, 3];
-var typeWeights = [0.60, 0.30, 0.1]; 
+var typeWeights = {
+    'first': [0.60, 0.30, 0.1],
+    'second': [0.30, 0.60, 0.1],
+    'third': [0.1, 0.30, 0.60]
+};
+
+var _currentTypeWeights = typeWeights.first;
+
+var _TypeWeightCount = 1;
 
 var killCounter = 0;
 var zombieCounter = 100;
@@ -133,7 +156,7 @@ var mainState = {
         */
         this.zombie = game.add.group();
         this.zombie.enableBody = true;
-        this.zombie.createMultiple(50, 'zombieSpritesheet', 0);
+        this.zombie.createMultiple(500, 'zombieSpritesheet', 0);
         this.zombie.setAll('body.gravity.y', 1000);
         this.zombie.forEach(function(zombie){
             zombie.rate = 0;
@@ -144,7 +167,7 @@ var mainState = {
         */
         this.oneBalloon = game.add.group();
         this.oneBalloon.enableBody = true;
-        this.oneBalloon.createMultiple(50, 'zombieSpritesheet', 1);
+        this.oneBalloon.createMultiple(500, 'zombieSpritesheet', 1);
         this.oneBalloon.forEach(function(zombie){
             zombie.rate = -20;
         });
@@ -154,7 +177,7 @@ var mainState = {
         */
         this.twoBalloons = game.add.group();
         this.twoBalloons.enableBody = true;
-        this.twoBalloons.createMultiple(50, 'zombieSpritesheet', 2);
+        this.twoBalloons.createMultiple(500, 'zombieSpritesheet', 2);
         this.twoBalloons.forEach(function(zombie){
             zombie.rate = -40;
         });
@@ -164,7 +187,7 @@ var mainState = {
         */
         this.threeBalloons = game.add.group();
         this.threeBalloons.enableBody = true;
-        this.threeBalloons.createMultiple(50, 'zombieSpritesheet', 3);
+        this.threeBalloons.createMultiple(500, 'zombieSpritesheet', 3);
         this.threeBalloons.forEach(function(zombie){
             zombie.rate = -60;
         });
@@ -217,14 +240,13 @@ var mainState = {
 
         // Add timer :: Increase stats every 1.5sec
         this.gameplayTimer = 
-            game.time.events.loop(10000, this.increaseStats, this);
+            //game.time.events.loop(10000, this.increaseStats, this);
+            game.time.events.loop(5000, this.increaseStats, this);
 
 
         /*
         Player Score :: Label
         */ 
-
-        // Create the Score object
         this.score = 0;
         
         this.labelScore = game.add.text(20, 20, "0", {
@@ -241,19 +263,20 @@ var mainState = {
                 {font: "30px Arial", fill: "#ffffff"});
 
         /*
-        Zombie Wave Gauge
+        Zombie Wave Text
         */
         this.WaveGaugeText = this.game.add.text(
                 0, this.game.height - 20, "Wave: ",
                 {font: "20px Arial", fill: "#ffffff"});
 
+        /*
+        Zombie Wave Gauge
+        */
         this.WaveGauge = this.game.add.sprite(
             this.WaveGaugeText.width, this.game.height - 10,'WaveGauge');
 
         this.WaveGauge.cropEnabled = true;
-        this.WaveGauge.crop.width = 
-            (killCounter / 100) * this.WaveGauge.width;
-    },
+   },
 
     update: function () 
     {
@@ -448,34 +471,31 @@ var mainState = {
     addOneZombie: function (x, y, zombieType) 
     {
         var _zombie;
-        var rate = 0;
 
         switch (zombieType)
         {
             case 0:
                 _zombie = this.zombie.getFirstDead();
-                _zombie.frame = 0;
             break;
 
             case 1:
                 _zombie = this.oneBalloon.getFirstDead();
-                _zombie.frame = 1;
             break;
 
             case 2:
                 _zombie = this.twoBalloons.getFirstDead();
-                _zombie.frame = 2;
             break;
 
             case 3:
                 _zombie = this.threeBalloons.getFirstDead();
-                _zombie.frame = 3;
             break;
         }
 
         // HACKISH :: Solves undefined reference
         if (_zombie)
         {
+            _zombie.frame = zombieType;
+
             _zombie.reset(x, y);
 
             _zombie.body.velocity.y = _zombie.rate;
@@ -516,15 +536,15 @@ var mainState = {
             return weighedList[R_Index];
         };
 
-        R_NumberOfZombies = randomGenerator(numberWeights, numberOfZombies);
+        R_NumberOfZombies = randomGenerator(_currentNumberWeights, numberOfZombies);
         zombieCounter -= R_NumberOfZombies;
 
-        for (var i = 0; i < R_NumberOfZombies; i++)
+        for (i = 0; i < R_NumberOfZombies; i++)
         {
             var xCoord = Math.floor(Math.random() * (windowWidth - 300)) + 150;
             var yCoord = Math.floor(Math.random() * (windowHeight - 150)) + 300;
 
-            R_TypeOfZombie = randomGenerator(typeWeights, typeOfZombies)
+            R_TypeOfZombie = randomGenerator(_currentTypeWeights, typeOfZombies)
 
             this.addOneZombie(xCoord, yCoord + 10, R_TypeOfZombie);
         }
@@ -543,6 +563,49 @@ var mainState = {
         this.oneBalloon.rate *= 0.5;
         this.twoBalloons.rate *= 0.5;
         this.threeBalloons.rate *= 0.5;
+
+        switch (_NumberWeightCount)
+        {
+            case 1:
+                _currentNumberWeights = numberWeights.second;  
+            break;
+
+            case 2:
+                _currentNumberWeights = numberWeights.third;  
+            break;
+
+            case 3:
+                _currentNumberWeights = numberWeights.fourth;  
+                _currentTypeWeights = typeWeights.second;
+            break;
+
+            case 4:
+                _currentNumberWeights = numberWeights.fifth;  
+            break;
+
+            case 5:
+                _currentNumberWeights = numberWeights.sixth;  
+            break;
+
+            case 6:
+                _currentNumberWeights = numberWeights.seventh;  
+                _currentTypeWeights = typeWeights.third;
+            break;
+
+            case 7:
+                _currentNumberWeights = numberWeights.eigth;  
+            break;
+
+            case 8:
+                _currentNumberWeights = numberWeights.ninth;  
+            break;
+
+            case 9:
+                _currentNumberWeights = numberWeights.tenth;  
+            break;
+        }
+
+        _NumberWeightCount++;
     },
 
 
@@ -575,7 +638,7 @@ var mainState = {
                 bullet.body.velocity.y = magnitude * Math.sin(angle);
             }
         }
-    },
+    }
 };
 
 function resizeGame()
