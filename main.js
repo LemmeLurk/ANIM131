@@ -256,6 +256,7 @@ var mainState = {
         Shot Counter :: Text and Label
         */
         this.shotCounter = 6;
+        console.log('ShotCounter -- Create: ' + this.shotCounter);
 
         this.labelShotCounter = 
             game.add.text(200, 200, "6", 
@@ -279,14 +280,11 @@ var mainState = {
 
     update: function () 
     {
-        if (game.input.keyboard.isDown(Phaser.Keyboard.UP))
+        if (killCounter === 100)
         {
             this.restartGame();
         }
-        if (killCounter === 100)
-        {
-            alert('Game Over');
-        }
+
         /*
         Aiming / Shooting
         */
@@ -329,7 +327,9 @@ var mainState = {
         /*
         MOVE ZOMBIES LEFT
         */
-        this.oneBalloon.forEach(function(zombie){
+        this.oneBalloon.forEach(
+        function(zombie)
+        {
             if (zombie.body.y < this.cloud.body.y - 200)
             {
                 zombie.body.velocity.y = 0;
@@ -366,7 +366,7 @@ var mainState = {
         _currentTypeWeights = typeWeights.first;
         _NumberWeightCount = 1;
         _currentNumberWeights = numberWeights.first;
-        
+
         game.state.start('main');
     },
 
@@ -382,12 +382,7 @@ var mainState = {
         var Balloon_Start = zombie.body.bottom - 125;  // Estimate of where balloons start between 1-150
         var Balloon_End = zombie.body.bottom - 150 // because balloons are 25px, so 25 more than start
 
-        var Zombie_Start = zombie.body.bottom // should be the very bottom of the sprite... might need
-                                // to double check that is so
-        var Zombie_End = Zombie_Start - 50 // because zombie's sprite is 50px
-
         var Zombie_Start = zombie.body.bottom - 23;
-
         var Zombie_End = Zombie_Start - 11;
 
         if (bullet.body.y <= Balloon_Start && bullet.body.y >= Balloon_End)
@@ -623,9 +618,9 @@ var mainState = {
 
     shoot: function () 
     {
-        if (game.time.now > nextFire)
+        if (this.game.time.now > nextFire)
         {
-            nextFire = game.time.now + fireRate;
+            nextFire = this.game.time.now + fireRate;
 
             var bullet = this.bullets.getFirstExists(false);
 
@@ -648,6 +643,12 @@ var mainState = {
 
                 bullet.body.velocity.x = magnitude * Math.cos(angle);
                 bullet.body.velocity.y = magnitude * Math.sin(angle);
+
+                this.shotCounter--;
+                this.labelShotCounter.text = this.shotCounter;
+
+                if (this.shotCounter === 0)
+                    this.cooldown = this.game.time.now;
             }
         }
     }
