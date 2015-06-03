@@ -43,6 +43,7 @@ var dx;
 var dy;
 
 var cloudWidth = 718;
+var aboveTheCloud = -61;
 
 var windowWidth = $(window).width();
 var windowHeight = $(window).height();
@@ -240,7 +241,7 @@ var mainState = {
         // Add timer :: Increase stats every 1.5sec
         this.gameplayTimer = 
             //game.time.events.loop(10000, this.increaseStats, this);
-            game.time.events.loop(5000, this.increaseStats, this);
+            game.time.events.loop(10000, this.increaseStats, this);
 
 
         /*
@@ -256,7 +257,6 @@ var mainState = {
         Shot Counter :: Text and Label
         */
         this.shotCounter = 6;
-        console.log('ShotCounter -- Create: ' + this.shotCounter);
 
         this.labelShotCounter = 
             game.add.text(200, 200, "6", 
@@ -323,14 +323,13 @@ var mainState = {
         this.game.physics.arcade.overlap(this.threeBalloons, this.bullets, 
             this.threeBalloonHandler, null, this); 
 
-
         /*
         MOVE ZOMBIES LEFT
         */
         this.oneBalloon.forEach(
         function(zombie)
         {
-            if (zombie.body.y < this.cloud.body.y - 200)
+            if (zombie.body.y == aboveTheCloud)
             {
                 zombie.body.velocity.y = 0;
                 zombie.body.velocity.x = -50;
@@ -339,7 +338,7 @@ var mainState = {
         }, this, true);
 
         this.twoBalloons.forEach(function(zombie){
-            if (zombie.body.y < this.cloud.body.y - 200)
+            if (zombie.body.y == aboveTheCloud)
             {
                 zombie.body.velocity.y = 0;
                 zombie.body.velocity.x = -70;
@@ -347,7 +346,7 @@ var mainState = {
         }, this, true);
 
         this.threeBalloons.forEach(function(zombie){
-            if (zombie.body.y < this.cloud.body.y - 200)
+            if (zombie.body.y == aboveTheCloud)
             {
                 zombie.body.velocity.y = 0;
                 zombie.body.velocity.x = -90;
@@ -473,7 +472,7 @@ var mainState = {
     },
 
 
-    addOneZombie: function (x, y, zombieType) 
+    addOneZombie: function (x, y, zombieType, spawnCode) 
     {
         var _zombie;
 
@@ -485,7 +484,7 @@ var mainState = {
 
             case 1:
                 _zombie = this.oneBalloon.getFirstDead();
-            break;
+           break;
 
             case 2:
                 _zombie = this.twoBalloons.getFirstDead();
@@ -503,10 +502,30 @@ var mainState = {
 
             _zombie.reset(x, y);
 
-            _zombie.body.velocity.y = _zombie.rate;
+            //_zombie.body.velocity.y = _zombie.rate;
             // Might have something to do with zombie not landing on
             // cloud
-            _zombie.body.velocity.x = 0;
+            //_zombie.body.velocity.x = 0;
+            if (spawnCode == 'T')
+            {
+                _zombie.body.velocity.y = -1 * _zombie.rate;
+                _zombie.body.velocity.x = 0;
+            }
+            else if (spawnCode == 'R')
+            {
+                _zombie.body.velocity.y = 0;
+                _zombie.body.velocity.x = _zombie.rate;
+            }
+            else if (spawnCode == 'L')
+            {
+                _zombie.body.velocity.y = 0;
+                _zombie.body.velocity.x = -1 * _zombie.rate;
+            }
+            else if (spawnCode == 'B')
+            {
+                _zombie.body.velocity.y = _zombie.rate;
+                _zombie.body.velocity.x = 0;
+            }
 
             _zombie.checkWorldBounds = true;
             _zombie.outOfBoundsKill = true;
@@ -516,6 +535,30 @@ var mainState = {
 
     addZombieHorde: function () 
     {
+        var spawnFrom = 
+        {
+            'bottom':  
+            {
+                'x': null,
+                'y': null 
+            },
+            'right':
+            {
+                'x':null,
+                'y':null 
+            },
+            'left':
+            {
+                'x': null,
+                'y':null 
+            },
+            'top':
+            {
+                'x': null,
+                'y':null 
+            }
+        };
+
         var randomGenerator = function(weights, objArray)
         {
             var counter = 0;
@@ -547,12 +590,54 @@ var mainState = {
         var _currentNumberOfZombies = 0;
         for (; _currentNumberOfZombies < R_NumberOfZombies;)
         {
-            var xCoord = Math.floor(Math.random() * (windowWidth - 300)) + 150;
-            var yCoord = Math.floor(Math.random() * (windowHeight - 150)) + 300;
+           // var xCoord = Math.floor(Math.random() * (windowWidth - 300)) + 150;
+           // var yCoord = Math.floor(Math.random() * (windowHeight - 150)) + 300;
+
+            //var xCoord = Math.floor(Math.random() * (windowWidth - 300)) + 150;
+            //var yCoord = Math.floor(Math.random() * (windowHeight - 150)) + 300;
+            var xCoord;
+            var yCoord;
+
+            var R_SpawnIndex = Math.floor(Math.random()*(4-1+1)+1);
+
+            var _currentSpawn = null;
+            var _spawnCode = null;
+
+            switch (R_SpawnIndex)
+            {
+                case 1:
+                    this.setSpawnPoint(spawnFrom.bottom, 'B');
+                    _spawnCode = 'B';
+                    _currentSpawn = spawnFrom.bottom;
+               break;
+
+                case 2:
+                    this.setSpawnPoint(spawnFrom.right, 'R');
+                    _spawnCode = 'R';
+                    _currentSpawn = spawnFrom.right;
+                break;
+
+                case 3:
+                    this.setSpawnPoint(spawnFrom.left, 'L');
+                    _spawnCode = 'L';
+                    _currentSpawn = spawnFrom.left;
+                break;
+
+                case 4:
+                    this.setSpawnPoint(spawnFrom.top, 'T');
+                    _spawnCode = 'T';
+                    _currentSpawn = spawnFrom.top;
+                break;
+
+                default:
+                    alert('noLag was: ' + R_SpawnIndex);
+            }
 
             R_TypeOfZombie = randomGenerator(_currentTypeWeights, typeOfZombies)
 
-            this.addOneZombie(xCoord, yCoord + 10, R_TypeOfZombie);
+            this.addOneZombie(_currentSpawn.x, 
+                _currentSpawn.y, R_TypeOfZombie, _spawnCode);
+
             _currentNumberOfZombies++;
         }
 
@@ -560,6 +645,33 @@ var mainState = {
         this.score += 1;
 
         this.labelScore.text = this.score;
+    },
+
+
+    setSpawnPoint: function(spawn, from)
+    {
+        switch(from)
+        {
+            case 'B':
+                spawn.x = game.world.randomX;
+                spawn.y = game.height;
+            break;
+
+            case 'R':
+                spawn.x = game.width;
+                spawn.y = game.world.randomY;
+            break;
+
+            case 'L':
+                spawn.x = 0;
+                spawn.y = game.world.randomY;
+            break;
+
+            case 'T':
+                spawn.x = game.world.randomX;
+                spawn.y = -149;
+            break;
+        }
     },
 
 
