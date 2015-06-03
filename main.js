@@ -339,6 +339,7 @@ var mainState = {
         /*
         MOVE ZOMBIES LEFT
         */
+        /*
         this.oneBalloon.forEachAlive(
         function(zombie)
         {
@@ -365,7 +366,6 @@ var mainState = {
                         300,
                         500 );
                 }
-                */
             }
             else if (zombie.body.y <= aboveTheCloud)
             {
@@ -391,7 +391,6 @@ var mainState = {
                         300,
                         500 );
                 }
-                */
             }
 
         }, this, true);
@@ -419,7 +418,6 @@ var mainState = {
                         300,
                         500 );
                 }
-                */
             }
             else if (zombie.body.y <= aboveTheCloud)
             {
@@ -446,7 +444,6 @@ var mainState = {
                         ,500 // maxTimeToFinish(ms) 
                     );
                 }
-                */
             }
         }, this, true);
 
@@ -474,7 +471,6 @@ var mainState = {
                         300,
                         500 );
                 }
-                */
             }
             // 
             else if (zombie.body.y <= aboveTheCloud)
@@ -502,9 +498,9 @@ var mainState = {
                         ,500 // maxTimeToFinish(ms) 
                     );
                 }
-                */
             }
         }, this, true);
+    */
     },
 
 
@@ -661,6 +657,7 @@ var mainState = {
             // Might have something to do with zombie not landing on
             // cloud
             //_zombie.body.velocity.x = 0;
+            /*
             if (spawnCode == 'T')
             {
                 _zombie.body.velocity.y = -1 * _zombie.rate;
@@ -681,6 +678,16 @@ var mainState = {
                 _zombie.body.velocity.y = _zombie.rate;
                 _zombie.body.velocity.x = 0;
             }
+            */
+
+           // _zombie.rotation = 
+            game.physics.arcade.moveToXY(
+                _zombie, 
+                this.container.player.x, 
+                this.container.player.y, 
+                _zombie.rate // speed, 
+                ,10000 // maxTimeToFinish(ms) 
+            );
 
             _zombie.checkWorldBounds = true;
             _zombie.outOfBoundsKill = true;
