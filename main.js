@@ -34,7 +34,6 @@ var _TypeWeightCount = 1;
 var killCounter = 0;
 var zombieCounter = 100;
 
-var angle = 0;
 var fireRate = 500;
 var nextFire = 0;
 
@@ -280,6 +279,10 @@ var mainState = {
 
     update: function () 
     {
+        if (game.input.keyboard.isDown(Phaser.Keyboard.UP))
+        {
+            this.restartGame();
+        }
         if (killCounter === 100)
         {
             alert('Game Over');
@@ -357,6 +360,13 @@ var mainState = {
     restartGame: function () 
     {
         // Start the 'main'state, which restarts the game
+        killCounter = 0;
+        zombieCounter = 100;
+        _TypeWeightCount = 1;
+        _currentTypeWeights = typeWeights.first;
+        _NumberWeightCount = 1;
+        _currentNumberWeights = numberWeights.first;
+        
         game.state.start('main');
     },
 
