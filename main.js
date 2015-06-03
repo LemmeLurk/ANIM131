@@ -44,6 +44,8 @@ var dy;
 
 var cloudWidth = 718;
 var aboveTheCloud = -61;
+var leftOfCloud = -129;
+var rightOfCloud = 80;
 
 var windowWidth = $(window).width();
 var windowHeight = $(window).height();
@@ -290,6 +292,7 @@ var mainState = {
         */
         dx = this.game.input.activePointer.worldX - this.container.handgun.x;
         dy = this.game.input.activePointer.worldY - this.container.handgun.y;
+        //console.log('dy: ' + dy + ' dx: ' + dx);
 
         this.container.handgun.rotation = Math.atan2(dy, dx);
 
@@ -326,30 +329,114 @@ var mainState = {
         /*
         MOVE ZOMBIES LEFT
         */
-        this.oneBalloon.forEach(
+        this.oneBalloon.forEachAlive(
         function(zombie)
         {
-            if (zombie.body.y == aboveTheCloud)
+            // Below the Cloud
+            if (zombie.body.y > this.cloud.body.y)
             {
-                zombie.body.velocity.y = 0;
-                zombie.body.velocity.x = -50;
+                // Below the Cloud & Reach safe zone -- Move Up
+                if (zombie.body.x == leftOfCloud || zombie.body.x == rightOfCloud)
+                {
+                    console.log('One Balloon:zombie.y > aboveCloud & zombie.x left/Right of cloud');
+                    // Traveling Left or Right -- Move Up 
+                    if (zombie.body.velocity.x < 0 || zombie.body.velocity.x > 0)
+                    {
+                        zombie.body.velocity.y = zombie.rate;
+                    }
+                }
+                // Below the Cloud but within Strike Range 
+                else if (zombie.body.y == aboveTheCloud + 150)
+                {
+                    console.log('One Balloon:zombie.y > aboveCloud & zombie.y == above+150');
+                    zombie.rotation = game.physics.arcade.moveToXY(
+                        zombie, 
+                        this.container.player.x, 
+                        this.container.player.y, 
+                        300,
+                        500 );
+                }
+            }
+            else if (zombie.body.y == aboveTheCloud)
+            {
+                // Above the Cloud, and is Left of Man -- Move Right
+                if (zombie.body.x < leftOfCloud)
+                {
+                    zombie.body.velocity.x = 50;
+                }
+                // Above the Cloud, and is Right of Man -- Move Left
+                else if (zombie.body.x > rightOfCloud)
+                {
+                    zombie.body.velocity.x = -50; 
+                }
+                // Above the Cloud but has reached Safe Zone
+                else if (zombie.body.x == leftOfCloud || 
+                    zombie.body.x == rightOfCloud)
+                {
+                    zombie.rotation = game.physics.arcade.moveToXY(
+                        zombie, 
+                        this.container.player.x, 
+                        this.container.player.y, 
+                        300,
+                        500 );
+                }
             }
 
         }, this, true);
 
-        this.twoBalloons.forEach(function(zombie){
+        this.twoBalloons.forEachAlive(function(zombie){
             if (zombie.body.y == aboveTheCloud)
             {
-                zombie.body.velocity.y = 0;
-                zombie.body.velocity.x = -70;
+                // Above the Cloud, and is Left of Man -- Move Right
+                if (zombie.body.x < leftOfCloud)
+                {
+                    zombie.body.velocity.x = 70;
+                }
+                // Above the Cloud, and is Right of Man -- Move Left
+                else if (zombie.body.x > rightOfCloud)
+                {
+                    zombie.body.velocity.x = -70; 
+                }
+                // Above the Cloud but has reached Safe Zone
+                else if (zombie.body.x == leftOfCloud || 
+                    zombie.body.x == rightOfCloud)
+                {
+                    zombie.rotation = game.physics.arcade.moveToXY(
+                        zombie, 
+                        this.container.player.x, 
+                        this.container.player.y, 
+                        300 // speed, 
+                        ,500 // maxTimeToFinish(ms) 
+                    );
+                }
             }
         }, this, true);
 
-        this.threeBalloons.forEach(function(zombie){
+        this.threeBalloons.forEachAlive(function(zombie){
             if (zombie.body.y == aboveTheCloud)
             {
-                zombie.body.velocity.y = 0;
-                zombie.body.velocity.x = -90;
+                // Above the Cloud, and is Left of Man -- Move Right
+                if (zombie.body.x < leftOfCloud)
+                {
+                    zombie.body.velocity.x = 90;
+                }
+                // Above the Cloud, and is Right of Man -- Move Left
+                else if (zombie.body.x > rightOfCloud)
+                {
+                    zombie.body.velocity.x = -90; 
+                }
+                // Above the Cloud but has reached Safe Zone
+                else if (zombie.body.x == leftOfCloud || 
+                    zombie.body.x == rightOfCloud)
+                {
+                    zombie.rotation = game.physics.arcade.moveToXY(
+                        zombie, 
+                        this.container.player.x, 
+                        this.container.player.y, 
+                        300 // speed, 
+                        ,500 // maxTimeToFinish(ms) 
+                    );
+                }
             }
         }, this, true);
     },
@@ -498,6 +585,8 @@ var mainState = {
         // HACKISH :: Solves undefined reference
         if (_zombie)
         {
+            _zombie.alive = true;
+            _zombie.exists = true;
             _zombie.frame = zombieType;
 
             _zombie.reset(x, y);
