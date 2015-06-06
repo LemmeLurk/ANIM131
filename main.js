@@ -34,7 +34,8 @@ var _TypeWeightCount = 1;
 var killCounter = 0;
 var zombieCounter = 100;
 
-var fireRate = 500;
+//var fireRate = 500;
+var fireRate = 350;
 var nextFire = 0;
 
 var rateOfSpawn = 1500;
@@ -46,6 +47,23 @@ var cloudWidth = 718;
 var aboveTheCloud = -61;
 var leftOfCloud = -129;
 var rightOfCloud = 80;
+
+var upX;
+var upY;
+
+var feetX;
+var feetY;
+
+var downX;
+var downY;
+
+var straightX;
+var straightY;
+
+var DEFAULT = 0;
+var SELECTED = 1;
+var RELOAD = 2;
+var NO_AMMO = 3;
 
 var windowWidth = $(window).width();
 var windowHeight = $(window).height();
@@ -84,9 +102,37 @@ var mainState = {
         game.load.image('threeAlone', 'assets/threeAlone.png');
 
         game.load.image('handgun', 'assets/handgun.png');
+        game.load.image('shotgun', 'assets/Shotgun.png');
         game.load.image('bullet', 'assets/projectile.png');
 
         game.load.image('WaveGauge', 'assets/WaveGauge.png');
+
+        game.load.image('top_up', 'assets/Eri_Test_Up.png');
+        game.load.image('bottom', 'assets/bottom.png');
+        game.load.image('straight', 'assets/Handgun_Straight.png');
+
+        game.load.spritesheet('handgunDown', 
+            'assets/handgunDown.png', 24, 43);
+
+        game.load.spritesheet('shotgunBlast',
+            'assets/ShotgunBlast.png', 141, 64, 17);
+
+        /*
+        Weapon GUI
+        */
+            /*
+            Handgun
+            */
+        game.load.spritesheet('handgunGUI', 
+            'assets/HandgunGUI.png', 50, 50);
+
+            /*
+            Shotgun
+            */
+        game.load.spritesheet('shotgunGUI', 
+            'assets/ShotgunGUI.png', 90, 50);
+
+
     },
 
 
@@ -97,6 +143,14 @@ var mainState = {
 
         this.cursors = 
             this.game.input.keyboard.createCursorKeys();
+
+
+        /*
+        Capture Keys
+        */
+        this.spacebar =
+            game.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR);
+
 
         /*
         Cloud Object
@@ -112,27 +166,77 @@ var mainState = {
         this.cloud.body.moves = false;
 
 
+        /*TEST AREA*/
+        this.upContainer = this.game.add.sprite(0, 0, null);
+
+        upX = cloudWidth/2 + 200;
+        upY = 210;
+
+        this.upContainer.up = 
+            this.game.add.sprite(upX, upY, 'top_up');
+        this.upContainer.up.anchor.setTo(0.5,0.5);
+        this.upContainer.up.enableBody = true;
+        this.game.physics.arcade.enable(this.upContainer.up);
+
+
+        feetX = upX - 10;
+        feetY = 205;
+
+        this.upContainer.feet = 
+            this.game.add.sprite(feetX, feetY, 'bottom');
+
+        downX = feetX;
+        downY = 220;
+
+        this.upContainer.down = 
+            this.game.add.sprite(downX, downY,
+                'handgunDown', 2);
+        //this.upContainer.down.anchor.setTo(0.5,1);
+        this.upContainer.down.anchor.setTo(0.5,0.5);
+        this.upContainer.down.enableBody = true;
+        this.game.physics.arcade.enable(this.upContainer.down);
+
+
+        straightX = upX+8;
+        straightY = 203.2222;
+
+        this.upContainer.straight = 
+            this.game.add.sprite(straightX, straightY,
+                'straight');
+        //this.upContainer.down.anchor.setTo(0.5,1);
+        this.upContainer.straight.anchor.setTo(0.5,0.5);
+        this.upContainer.straight.enableBody = true;
+        this.game.physics.arcade.enable(this.upContainer.straight);
+
+
         /*
-        CONTAINER :: Player, handgun
+        PLAYER
+        */
+        this.player = game.add.sprite(0, 0, null);
+        this.player.weapon = 'Handgun';
+        this.player.weapon.maxAmmo = 80;
+
+        /*
+        Player CONTAINER :: Player, handgun
         */
         this.container = game.add.sprite(0, 0, null);
 
-        //this.game.physics.arcade.enable(this.container);
 
             /*
             Player
             */
         var playerX = (cloudWidth/2) + cloudX;
-        this.container.player = this.game.add.sprite(playerX, 210, 'player');
+        this.container.player = this.game.add.sprite(playerX-50, 210, 'player');
         this.container.player.anchor.setTo(0.5);
         this.container.addChild(this.container.player);
         this.container.player.enableBody = true;
+
 
             /*
             Handgun
             */
         //this.container.handgun = this.game.add.sprite(150, 235, 'handgun');
-        this.container.handgun = this.game.add.sprite(playerX+20, 215, 'handgun');
+        this.container.handgun = this.game.add.sprite(playerX+20 - 50, 215, 'handgun');
         this.container.handgun.anchor.set(0,.5);
         this.container.addChild(this.container.handgun);
         this.container.handgun.enableBody = true;
@@ -140,10 +244,51 @@ var mainState = {
 
         this.container.handgun.angle = 0;
 
+                /*
+                Handgun Bullets
+                */
+        this.bullets = game.add.group();
+        this.bullets.createMultiple(50, 'bullet', 0, false);
+        this.bullets.forEach(function(bullet){
+            bullet.enableBody = true;
+            this.game.physics.arcade.enable(bullet, 
+                Phaser.Physics.ARCADE);
+        });
+
+
 
             /*
-            CONTAINER PHYSICS
+            Shotgun
             */
+        this.container.shotgun = this.game.add.sprite(playerX+20 - 50, 215, 'shotgun');
+        this.container.shotgun.anchor.set(0,.5);
+        this.container.addChild(this.container.shotgun);
+        this.container.shotgun.enableBody = true;
+
+        this.container.shotgun.visible = false;
+
+                /*
+                Shotgun Blast Animation
+                */
+        this.blasts = game.add.group();
+        this.blasts.createMultiple(50, 'shotgunBlast', 0, false);
+        this.blasts.forEach(function(blast){
+            blast.enableBody = true;
+            this.game.physics.arcade.enable(blast, 
+                Phaser.Physics.ARCADE);
+            blast.animations.add('blast');
+            blast.killOnComplete = true;
+            blast.anchor.setTo(0.5, 0.5);
+        });
+
+        //this.container.blast.visible = false;
+
+
+
+
+        /*
+        CONTAINER PHYSICS
+        */
         this.game.physics.arcade.enable(this.container, Phaser.Physics.ARCADE);
 
         this.game.physics.arcade.enable(this.container.player, 
@@ -151,6 +296,11 @@ var mainState = {
 
         this.game.physics.arcade.enable(this.container.handgun, 
             Phaser.Physics.ARCADE);
+
+        /*
+        CONATINER PROPERTIES
+        */
+        this.container.currentWeapon = this.container.handgun;
 
 
         /*
@@ -214,29 +364,20 @@ var mainState = {
         this.threeAlone.setAll('body.velocity.y', -60);
 
 
-        /*
-        Bullets
-        */
-        this.bullets = game.add.group();
-        this.bullets.createMultiple(50, 'bullet', 0, false);
-        this.bullets.forEach(function(bullet){
-            bullet.enableBody = true;
-            this.game.physics.arcade.enable(bullet, 
-                Phaser.Physics.ARCADE);
-        });
-
 
         /*
         Timers
         */
-       // this.timer = game.time.events.loop(3500, this.addZombieHorde, this);
-        this.timer = game.time.events.loop(rateOfSpawn, 
-            this.addZombieHorde, this);
+        //this.timer = game.time.events.loop(rateOfSpawn, 
+        //    this.addZombieHorde, this);
 
 
         this.reloadTimer = 
             this.game.time.create(this.game, false);
 
+
+        this.weaponTimer =
+            this.game.time.now;
 
         this.cooldown = this.game.time.now;
 
@@ -278,26 +419,177 @@ var mainState = {
             this.WaveGaugeText.width, this.game.height - 10,'WaveGauge');
 
         this.WaveGauge.cropEnabled = true;
+
+
+        /*
+        WeaponGUI Layout
+        */
+        this.handgunGUI = this.game.add.sprite(
+            this.game.width - 140, this.game.height - 70, "handgunGUI", SELECTED);
+        this.shotgunGUI = this.game.add.sprite(
+            this.handgunGUI.x+50, this.game.height - 70, "shotgunGUI", DEFAULT);
    },
 
     update: function () 
     {
         if (killCounter === 100)
         {
+            alert('Congrats... dem undead is dead');
             this.restartGame();
         }
 
         /*
-        Aiming / Shooting
+        Switching Weapon
         */
-        dx = this.game.input.activePointer.worldX - this.container.handgun.x;
-        dy = this.game.input.activePointer.worldY - this.container.handgun.y;
+        if (this.spacebar.isDown &&
+            this.game.time.now - this.weaponTimer > 350)
+        {
+            console.log(this.player.weapon);
+            if (this.player.weapon == 'Handgun')
+            {
+                // TODO add check for ammo and handle case 
+                // Unselect Handgun
+                this.handgunGUI.frame = DEFAULT;
+                this.container.handgun.visible = false;
+
+                // Switch to shotgun
+                this.player.weapon = 'Shotgun';
+                this.container.currentWeapon = 
+                    this.container.shotgun;
+
+
+                this.container.shotgun.visible = true;
+
+                this.shotgunGUI.frame = SELECTED;
+
+
+                // Weapon Successfully selected
+                this.weaponTimer = this.game.time.now;
+            }
+            else if (this.game.time.now - this.weaponTimer > 350)
+            {
+                // TODO add check for ammo and handle case 
+                // Unselect Shotgun
+                this.shotgunGUI.frame = DEFAULT;
+
+                this.container.shotgun.visible = false;
+
+                // Switch to Handgun
+                this.player.weapon = 'Handgun';
+                this.container.currentWeapon = 
+                    this.container.handgun;
+
+                this.container.handgun.visible = true;
+
+                this.handgunGUI.frame = SELECTED;
+
+                this.weaponTimer = this.game.time.now;
+            }
+            console.log(this.player.weapon);
+        }
+
+        /*
+        AIMING
+        */
+        dx = this.game.input.activePointer.worldX - this.container.currentWeapon.x;
+        dy = this.game.input.activePointer.worldY - this.container.currentWeapon.y;
         //console.log('dy: ' + dy + ' dx: ' + dx);
 
-        this.container.handgun.rotation = Math.atan2(dy, dx);
+        //var roundedDy = Phaser.Math.floorTo(dy, 0);
+        var roundedDx = Phaser.Math.floorTo(dx, 0);
 
+        var roundedDy = Phaser.Math.floorTo(
+            this.container.currentWeapon.rotation, 0);
+
+        // TRY THIS -- if not, remove current weapon and do an if/else
+        // IF NOT -- Get rid of currentWeapon all together
+        this.container.currentWeapon.rotation = Math.atan2(dy, dx);
+
+        if (roundedDy <= 0)
+        {
+            // TOP 
+            if (roundedDy == -2)
+            {
+                this.upContainer.down.visible = false;
+                this.upContainer.straight.visible = false;
+                this.upContainer.up.visible = true;
+
+                this.upContainer.up.scale.x *= 1;
+                this.upContainer.up.scale.y *= -1;
+
+                this.upContainer.up.rotation = 
+                    Math.atan2(dy,dx);
+            }
+            // STRAIGHT 
+            else if (roundedDy == -1 || roundedDy == 0)
+            {
+                this.upContainer.down.visible = false;
+                this.upContainer.up.visible = false;
+                this.upContainer.straight.visible = true;
+
+                this.upContainer.straight.scale.x *= 1;
+                this.upContainer.straight.scale.y *= 1;
+
+                this.upContainer.straight.rotation = 
+                    Math.atan2(dy,dx);
+            }
+            // LEFT -- INVERT
+            else if (roundedDy == -3 || roundedDy == -4)
+            {
+                this.upContainer.down.visible = false;
+                this.upContainer.straight.visible = false;
+                //this.upContainer.up.visible = true;
+                this.upContainer.up.reset(
+                    straightX, straightY + 20);
+
+                this.upContainer.up.scale.x *= -1;
+                this.upContainer.up.scale.y *= 1;
+
+                this.upContainer.up.rotation = 
+                    Math.atan2(dy,dx);
+            }
+        } // End if < 0
+
+        else if (roundedDy >= 0)
+        {
+            // DOWN 
+            if (roundedDy == 1)
+            {
+                this.upContainer.up.visible = false;
+                this.upContainer.straight.visible = false;
+                this.upContainer.down.visible = true;
+
+                //this.upContainer.down.scale.y = 1;
+                //this.upContainer.down.scale.x = 1;
+
+                this.upContainer.down.rotation = 
+                    Math.atan2(dy,dx);
+            }
+            // DOWN -- INVERT 
+            else if (roundedDy == 2)
+            {
+                this.upContainer.up.visible = false;
+                this.upContainer.straight.visible = false;
+                this.upContainer.down.visible = true;
+
+                this.upContainer.down.scale.x *= -1;
+                this.upContainer.down.scale.y *= -1;
+
+                //this.upContainer.down.rotation = 
+                //    Math.atan2(dy,dx);
+                this.upContainer.down.rotation = 
+                this.container.currentWeapon.rotation;
+                    //Math.atan2(dy,dx);
+            }
+        }
+
+        /*
+        SHOOTING
+        */
         if (this.game.input.activePointer.isDown)
         {
+            this.shoot();
+            /*
             if (this.shotCounter > 0)
             {
                 this.shoot();
@@ -308,12 +600,16 @@ var mainState = {
                 this.labelShotCounter.text = this.shotCounter;
                 this.shoot();
             }
+            */
         }
 
 
         /*
         Collision Detection
         */
+            /*
+            ZOMBIE vs PLAYER
+            */
         if (this.game.physics.arcade.overlap(this.container.player, this.zombie, 
             this.restartGame, null, this))
             alert('this.container + this.zombie');
@@ -327,6 +623,9 @@ var mainState = {
             this.restartGame, null, this))
             alert('this.container + this.threeBalloons');
 
+            /*
+            ZOMBIE W/ BALLOON vs BULLET
+            */
         this.game.physics.arcade.overlap(this.oneBalloon, this.bullets, 
             this.oneBalloonHandler, null, this); 
 
@@ -336,171 +635,18 @@ var mainState = {
         this.game.physics.arcade.overlap(this.threeBalloons, this.bullets, 
             this.threeBalloonHandler, null, this); 
 
-        /*
-        MOVE ZOMBIES LEFT
-        */
-        /*
-        this.oneBalloon.forEachAlive(
-        function(zombie)
-        {
-            // Below the Cloud
-            if (zombie.body.y > this.cloud.body.y)
-            {
-                // Below the Cloud & Reach safe zone -- Move Up
-                if (zombie.body.x >= leftOfCloud || zombie.body.x <= rightOfCloud)
-                {
-                    // Traveling Left or Right -- Move Up 
-                    if (zombie.body.velocity.x < 0 || zombie.body.velocity.x > 0)
-                    {
-                        zombie.body.velocity.y = zombie.rate;
-                    }
-                }
-                // Below the Cloud but within Strike Range 
-                /*
-                else if (zombie.body.y <= aboveTheCloud + 150)
-                {
-                    zombie.rotation = game.physics.arcade.moveToXY(
-                        zombie, 
-                        this.container.player.x, 
-                        this.container.player.y, 
-                        300,
-                        500 );
-                }
-            }
-            else if (zombie.body.y <= aboveTheCloud)
-            {
-                // Above the Cloud, and is Left of Man -- Move Right
-                if (zombie.body.x < leftOfCloud)
-                {
-                    zombie.body.velocity.x = 50;
-                }
-                // Above the Cloud, and is Right of Man -- Move Left
-                else if (zombie.body.x > rightOfCloud)
-                {
-                    zombie.body.velocity.x = -50; 
-                }
-                // Above the Cloud but has reached Safe Zone
-                /*
-                else if (zombie.body.x == leftOfCloud || 
-                    zombie.body.x == rightOfCloud)
-                {
-                    zombie.rotation = game.physics.arcade.moveToXY(
-                        zombie, 
-                        this.container.player.x, 
-                        this.container.player.y, 
-                        300,
-                        500 );
-                }
-            }
 
-        }, this, true);
+            /*
+            ZOMBIE W/ BALLOON vs BLAST
+            */
+        this.game.physics.arcade.overlap(this.oneBalloon, this.blasts, 
+            this.oneBalloonHandler, null, this); 
 
-        this.twoBalloons.forEachAlive(function(zombie){
-            if (zombie.body.y > this.cloud.body.y)
-            {
-                // Below the Cloud & Reach safe zone -- Move Up
-                if (zombie.body.x >= leftOfCloud || zombie.body.x <= rightOfCloud)
-                {
-                    // Traveling Left or Right -- Move Up 
-                    if (zombie.body.velocity.x < 0 || zombie.body.velocity.x > 0)
-                    {
-                        zombie.body.velocity.y = zombie.rate;
-                    }
-                }
-                // Below the Cloud but within Strike Range 
-                /*
-                else if (zombie.body.y <= aboveTheCloud + 150)
-                {
-                    zombie.rotation = game.physics.arcade.moveToXY(
-                        zombie, 
-                        this.container.player.x, 
-                        this.container.player.y, 
-                        300,
-                        500 );
-                }
-            }
-            else if (zombie.body.y <= aboveTheCloud)
-            {
-                // Above the Cloud, and is Left of Man -- Move Right
-                if (zombie.body.x < leftOfCloud)
-                {
-                    zombie.body.velocity.x = 70;
-                }
-                // Above the Cloud, and is Right of Man -- Move Left
-                else if (zombie.body.x > rightOfCloud)
-                {
-                    zombie.body.velocity.x = -70; 
-                }
-                // Above the Cloud but has reached Safe Zone
-                /*
-                else if (zombie.body.x == leftOfCloud || 
-                    zombie.body.x == rightOfCloud)
-                {
-                    zombie.rotation = game.physics.arcade.moveToXY(
-                        zombie, 
-                        this.container.player.x, 
-                        this.container.player.y, 
-                        300 // speed, 
-                        ,500 // maxTimeToFinish(ms) 
-                    );
-                }
-            }
-        }, this, true);
+        this.game.physics.arcade.overlap(this.twoBalloons, this.blasts, 
+            this.twoBalloonHandler, null, this); 
 
-        this.threeBalloons.forEachAlive(function(zombie){
-            // Below The Cloud
-            if (zombie.body.y > this.cloud.body.y)
-            {
-                // Below the Cloud & Reach safe zone -- Move Up
-                if (zombie.body.x >= leftOfCloud || zombie.body.x <= rightOfCloud)
-                {
-                    // Traveling Left or Right -- Move Up 
-                    if (zombie.body.velocity.x < 0 || zombie.body.velocity.x > 0)
-                    {
-                        zombie.body.velocity.y = zombie.rate;
-                    }
-                }
-                // Below the Cloud but within Strike Range 
-                /*
-                else if (zombie.body.y <= aboveTheCloud + 150)
-                {
-                    zombie.rotation = game.physics.arcade.moveToXY(
-                        zombie, 
-                        this.container.player.x, 
-                        this.container.player.y, 
-                        300,
-                        500 );
-                }
-            }
-            // 
-            else if (zombie.body.y <= aboveTheCloud)
-            {
-                // Above the Cloud, and is Left of Man -- Move Right
-                if (zombie.body.x <= leftOfCloud)
-                {
-                    zombie.body.velocity.x = 90;
-                }
-                // Above the Cloud, and is Right of Man -- Move Left
-                else if (zombie.body.x >= rightOfCloud)
-                {
-                    zombie.body.velocity.x = -90; 
-                }
-                // Above the Cloud but has reached Safe Zone
-                /*
-                else if (zombie.body.x >= leftOfCloud || 
-                    zombie.body.x <= rightOfCloud)
-                {
-                    zombie.rotation = game.physics.arcade.moveToXY(
-                        zombie, 
-                        this.container.player.x, 
-                        this.container.player.y, 
-                        300 // speed, 
-                        ,500 // maxTimeToFinish(ms) 
-                    );
-                }
-            }
-        }, this, true);
-    */
+        this.game.physics.arcade.overlap(this.threeBalloons, this.blasts, 
+            this.threeBalloonHandler, null, this); 
     },
 
 
@@ -653,34 +799,6 @@ var mainState = {
 
             _zombie.reset(x, y);
 
-            //_zombie.body.velocity.y = _zombie.rate;
-            // Might have something to do with zombie not landing on
-            // cloud
-            //_zombie.body.velocity.x = 0;
-            /*
-            if (spawnCode == 'T')
-            {
-                _zombie.body.velocity.y = -1 * _zombie.rate;
-                _zombie.body.velocity.x = 0;
-            }
-            else if (spawnCode == 'R')
-            {
-                _zombie.body.velocity.y = 0;
-                _zombie.body.velocity.x = _zombie.rate;
-            }
-            else if (spawnCode == 'L')
-            {
-                _zombie.body.velocity.y = 0;
-                _zombie.body.velocity.x = -1 * _zombie.rate;
-            }
-            else if (spawnCode == 'B')
-            {
-                _zombie.body.velocity.y = _zombie.rate;
-                _zombie.body.velocity.x = 0;
-            }
-            */
-
-           // _zombie.rotation = 
             game.physics.arcade.moveToXY(
                 _zombie, 
                 this.container.player.x, 
@@ -752,11 +870,6 @@ var mainState = {
         var _currentNumberOfZombies = 0;
         for (; _currentNumberOfZombies < R_NumberOfZombies;)
         {
-           // var xCoord = Math.floor(Math.random() * (windowWidth - 300)) + 150;
-           // var yCoord = Math.floor(Math.random() * (windowHeight - 150)) + 300;
-
-            //var xCoord = Math.floor(Math.random() * (windowWidth - 300)) + 150;
-            //var yCoord = Math.floor(Math.random() * (windowHeight - 150)) + 300;
             var xCoord;
             var yCoord;
 
@@ -896,33 +1009,86 @@ var mainState = {
         {
             nextFire = this.game.time.now + fireRate;
 
-            var bullet = this.bullets.getFirstExists(false);
-
-            if (bullet)
+            if (this.player.weapon == 'Handgun')
             {
-                bullet.frame = game.rnd.integerInRange(0, 6);
-                bullet.exists = true;
-                bullet.position.set(
-                    this.container.handgun.x, 
-                    this.container.handgun.y);
+                var bullet = this.bullets.getFirstExists(false);
 
-                this.game.physics.arcade.enable(bullet);
+                if (bullet)
+                {
+                    bullet.frame = game.rnd.integerInRange(0, 6);
+                    bullet.exists = true;
+                    bullet.position.set(
+                        this.container.handgun.x, 
+                        this.container.handgun.y);
 
-                bullet.body.rotation = 
-                this.container.handgun.rotation + 
-                this.game.math.degToRad(-90);
+                    this.game.physics.arcade.enable(bullet);
 
-                var magnitude = 500;
-                var angle = bullet.body.rotation + Math.PI / 2;
+                    bullet.body.rotation = 
+                    this.container.handgun.rotation + 
+                    this.game.math.degToRad(-90);
 
-                bullet.body.velocity.x = magnitude * Math.cos(angle);
-                bullet.body.velocity.y = magnitude * Math.sin(angle);
+                    var magnitude = 500;
+                    var angle = bullet.body.rotation + Math.PI / 2;
 
-                this.shotCounter--;
-                this.labelShotCounter.text = this.shotCounter;
+                    bullet.body.velocity.x = magnitude * Math.cos(angle);
+                    bullet.body.velocity.y = magnitude * Math.sin(angle);
 
-                if (this.shotCounter === 0)
-                    this.cooldown = this.game.time.now;
+                    this.shotCounter--;
+                    this.labelShotCounter.text = this.shotCounter;
+
+                    if (this.shotCounter === 0)
+                        this.cooldown = this.game.time.now;
+
+                    console.log(Phaser.Math.floorTo(this.container.handgun.rotation, 0));
+
+                    bullet.checkWorldBounds = true;
+                    bullet.outOfBoundsKill = true;
+                }
+            }
+            else
+            {
+                //this.anim.onComplete.add(function() {
+                //    this.deadGroup.add(this);
+                //}, this.container.shotgun);
+
+                var shotgunBlast = this.blasts.getFirstExists(false); 
+
+                if (shotgunBlast)
+                {
+                    shotgunBlast.exists = true;
+                    shotgunBlast.position.set(
+                        this.container.shotgun.x + 100, 
+                        this.container.shotgun.y);
+
+                    this.game.physics.arcade.enable(shotgunBlast);
+
+                    shotgunBlast.body.rotation = 
+                    this.container.currentWeapon.rotation + 
+                    this.game.math.degToRad(-90);
+
+                    var magnitude = 1000;
+                    var angle = 
+                        shotgunBlast.body.rotation + Math.PI / 2;
+
+                    shotgunBlast.body.velocity.x = magnitude * Math.cos(angle);
+                    shotgunBlast.body.velocity.y = magnitude * Math.sin(angle);
+
+                    if (Phaser.Math.floorTo(
+                        this.container.currentWeapon.rotation, 0) < 0)
+                        shotgunBlast.scale.x *= -1;
+                    else
+                        shotgunBlast.scale.x *= 1;
+
+                    shotgunBlast.animations.play('blast', 17, false, true);
+
+                    this.shotCounter--;
+                    this.labelShotCounter.text = this.shotCounter;
+
+                    if (this.shotCounter === 0)
+                        this.cooldown = this.game.time.now;
+
+                    console.log(Phaser.Math.floorTo(this.container.handgun.rotation, 0));
+                }
             }
         }
     }
