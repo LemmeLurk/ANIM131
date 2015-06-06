@@ -154,8 +154,8 @@ var mainState = {
         /*
         Timers
         */
-        this.timer = game.time.events.loop(rateOfSpawn, 
-            this.addZombieHorde, this);
+        //this.timer = game.time.events.loop(rateOfSpawn, 
+        //    this.addZombieHorde, this);
 
 
         this.reloadTimer = 
@@ -235,7 +235,19 @@ var mainState = {
 
         this.cloud.body.immovable = true;
         this.cloud.body.moves = false;
-
+        
+        this.cloudPlatform = this.game.add.sprite(
+            this.game.world.centerX - (cloudWidth/2), 234);
+        this.game.physics.arcade.enable(this.cloudPlatform,
+            Phaser.Physics.ARCADE);
+        this.cloudPlatform.body.immovable = true;
+        this.cloudPlatform.moves = false;
+        //this.cloudPlatform.scale.x *= 1500;
+        //this.cloudPlatform.scale.y *= 20;
+        this.cloudPlatform.body.width = cloudWidth - 30;
+        this.cloudPlatform.collideWorldBounds = true;
+        this.cloudPlatform.allowGravity = false;
+        //this.cloudPlatform.scale.x = 718;
 
 
         /*TEST AREA*/
@@ -284,12 +296,15 @@ var mainState = {
         this.upContainer.straight.enableBody = true;
         this.game.physics.arcade.enable(this.upContainer.straight);
 
+        */
 
-        this.zom = game.add.sprite(350, aboveTheCloud, 
+        // 150 is the LEFT EDGE of Cloud
+        // 840 is the RIGHT EDGE of Cloud
+        this.zom = game.add.sprite(150, aboveTheCloud, 
             'zombieSpritesheet', 0);
         this.zom.enableBody = true;
-        this.game.physics.arcade.enable(this.zom);
-        */
+        this.game.physics.arcade.enable(this.zom, 
+            Phaser.Physics.ARCADE);
 
 
         /*TEST AREA*/
@@ -333,7 +348,7 @@ var mainState = {
         this.container.handgun.angle = 0;
 
         this.container.handgun.nextFire = 0;
-        this.container.handgun.fireRate = 350;
+        this.container.handgun.fireRate = 270;
         this.container.handgun.maxAmmo = 80;
         this.container.handgun.ammoLeft = 80;
         this.container.handgun.maxRounds = 6;
@@ -485,7 +500,6 @@ var mainState = {
         }
 
 
-
         /*
         AIMING
         */
@@ -519,7 +533,6 @@ var mainState = {
                 else if (this.player.weapon == 'Handgun' &&
                     this.container.handgun.roundsLeft > 0)
                 {
-                    console.log('this.player.weapon == Handgun && this.container.handgun.reloading == fals');
                     this.shoot();
                 }
                 else if (this.game.time.now - this.container.currentWeapon.cooldown > 
@@ -540,8 +553,10 @@ var mainState = {
         /*
         Switching Weapon
         */
-        if (this.spacebar.isDown &&
-            this.game.time.now - this.weaponTimer > 350)
+        if ((this.spacebar.isDown &&
+            this.game.time.now - this.weaponTimer > 350) ||
+            (game.input.x > this.handgunGUI.x && 
+            game.input.y < this.handgunGUI.y - 50))
         {
             // Switch from Handgun to shotgun
             if (this.player.weapon == 'Handgun')
@@ -704,21 +719,19 @@ var mainState = {
         /* TEST AREA */
         /* TEST AREA */
         /* TEST AREA */
-        /*
         this.game.physics.arcade.overlap(this.zom, this.bullets,
             function(zombie, bullet){
                 zombie.body.gravity.y = 1000;
             }, null, this);
 
-        this.game.physics.arcade.collide(this.zom, this.cloud,
+        this.game.physics.arcade.collide(this.zom, this.cloudPlatform,
             function(zombie, cloud){
-                while ()
+                // TODO Add Zombie Walking animation
                 if (zombie.body.x < this.container.player.body.x)
                     zombie.body.velocity.x = 20;
                 else
                     zombie.body.velocity.x = -20;
             }, null, this);
-*/
         /* TEST AREA */
         /* TEST AREA */
         /* TEST AREA */
@@ -1209,7 +1222,7 @@ var mainState = {
                         this.handgunGUI.frame = RELOAD;
                     }
 
-                    console.log(Phaser.Math.floorTo(this.container.handgun.rotation, 0));
+                    //console.log(Phaser.Math.floorTo(this.container.handgun.rotation, 0));
 
                     bullet.checkWorldBounds = true;
                     bullet.outOfBoundsKill = true;
@@ -1275,6 +1288,12 @@ var mainState = {
                     this.shotgunGUI.frame = NO_AMMO;                    
             }
         }
+    },
+
+    render: function()
+    {
+       game.debug.text('cloudPat x '+this.cloudPlatform.x, 100, 200);
+       game.debug.text('cloud x '+ this.cloud.x, 100, 100);
     }
 };
 
