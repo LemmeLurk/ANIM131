@@ -34,14 +34,13 @@ var _TypeWeightCount = 1;
 var killCounter = 0;
 var zombieCounter = 100;
 
-//var fireRate = 500;
-var fireRate = 350;
-var nextFire = 0;
-
 var rateOfSpawn = 1500;
 
 var dx;
 var dy;
+
+var roundedDx;
+var roundedDy;
 
 var cloudWidth = 718;
 var aboveTheCloud = -61;
@@ -244,6 +243,12 @@ var mainState = {
 
         this.container.handgun.angle = 0;
 
+        this.container.handgun.nextFire = 0;
+        this.container.handgun.fireRate = 350;
+        this.container.handgun.maxAmmo = 80;
+        this.container.handgun.maxRounds = 6;
+        this.container.handgun.roundsLeft = 6;
+
                 /*
                 Handgun Bullets
                 */
@@ -266,6 +271,12 @@ var mainState = {
         this.container.shotgun.enableBody = true;
 
         this.container.shotgun.visible = false;
+
+        this.container.handgun.nextFire = 0;
+        this.container.handgun.fireRate = 500;
+        this.container.handgun.maxAmmo = 30;
+        this.container.handgun.maxRounds = 6;
+        this.container.handgun.roundsLeft = 6;
 
                 /*
                 Shotgun Blast Animation
@@ -496,15 +507,16 @@ var mainState = {
         //console.log('dy: ' + dy + ' dx: ' + dx);
 
         //var roundedDy = Phaser.Math.floorTo(dy, 0);
-        var roundedDx = Phaser.Math.floorTo(dx, 0);
+        roundedDx = Phaser.Math.floorTo(dx, 0);
 
-        var roundedDy = Phaser.Math.floorTo(
+        roundedDy = Phaser.Math.floorTo(
             this.container.currentWeapon.rotation, 0);
 
         // TRY THIS -- if not, remove current weapon and do an if/else
         // IF NOT -- Get rid of currentWeapon all together
         this.container.currentWeapon.rotation = Math.atan2(dy, dx);
 
+            /*
         if (roundedDy <= 0)
         {
             // TOP 
@@ -578,10 +590,9 @@ var mainState = {
                 //this.upContainer.down.rotation = 
                 //    Math.atan2(dy,dx);
                 this.upContainer.down.rotation = 
-                this.container.currentWeapon.rotation;
-                    //Math.atan2(dy,dx);
+                    Math.atan2(dy,dx);
             }
-        }
+        }*/
 
         /*
         SHOOTING
@@ -1005,9 +1016,11 @@ var mainState = {
 
     shoot: function () 
     {
-        if (this.game.time.now > nextFire)
+        if (this.game.time.now > 
+            this.container.currentWeapon.nextFire)
         {
-            nextFire = this.game.time.now + fireRate;
+            this.container.currentWeapon.nextFire =
+            this.game.time.now + this.container.currentWeapon.fireRate;
 
             if (this.player.weapon == 'Handgun')
             {
@@ -1045,7 +1058,7 @@ var mainState = {
                     bullet.outOfBoundsKill = true;
                 }
             }
-            else
+            else if (this.game.time.now > this.container.currentWeapon.nextFire)
             {
                 //this.anim.onComplete.add(function() {
                 //    this.deadGroup.add(this);
@@ -1056,38 +1069,46 @@ var mainState = {
                 if (shotgunBlast)
                 {
                     shotgunBlast.exists = true;
+                    /*
                     shotgunBlast.position.set(
-                        this.container.shotgun.x + 100, 
+                        this.container.shotgun.x + 120, 
                         this.container.shotgun.y);
+*/
 
                     this.game.physics.arcade.enable(shotgunBlast);
 
-                    shotgunBlast.body.rotation = 
-                    this.container.currentWeapon.rotation + 
-                    this.game.math.degToRad(-90);
+                    //shotgunBlast.body.rotation = 
+                    //this.container.currentWeapon.rotation + 
+                    //this.game.math.degToRad(-90);
 
-                    var magnitude = 1000;
-                    var angle = 
-                        shotgunBlast.body.rotation + Math.PI / 2;
+                    //var magnitude = 1000;
+                    //var angle = 
+                    //    shotgunBlast.body.rotation + Math.PI / 2;
 
-                    shotgunBlast.body.velocity.x = magnitude * Math.cos(angle);
-                    shotgunBlast.body.velocity.y = magnitude * Math.sin(angle);
+                    //shotgunBlast.body.velocity.x = magnitude * Math.cos(angle);
+                    //shotgunBlast.body.velocity.y = magnitude * Math.sin(angle);
 
-                    if (Phaser.Math.floorTo(
-                        this.container.currentWeapon.rotation, 0) < 0)
-                        shotgunBlast.scale.x *= -1;
-                    else
-                        shotgunBlast.scale.x *= 1;
+                    //shotgunBlast.rotation =
+                    //    this.container.currentWeapon.rotation;
+
+                    this.container.shotgun.addChild(shotgunBlast);
+
+                    shotgunBlast.y = 0;
+                    shotgunBlast.x = 190;
+
 
                     shotgunBlast.animations.play('blast', 17, false, true);
 
-                    this.shotCounter--;
-                    this.labelShotCounter.text = this.shotCounter;
+                    this.container.shotgun.maxAmmo--;
+                    this.container.shotgun.roundsLeft--;
+                    this.labelShotCounter.text = 
+                    this.container.shotgun.roundsLeft;
 
-                    if (this.shotCounter === 0)
+                    if (this.container.shotgun.roundsLeft === 0)
                         this.cooldown = this.game.time.now;
 
-                    console.log(Phaser.Math.floorTo(this.container.handgun.rotation, 0));
+                    this.container.currentWeapon.nextFire =
+                    this.game.time.now + this.container.currentWeapon.fireRate;
                 }
             }
         }
