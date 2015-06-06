@@ -318,7 +318,7 @@ var mainState = {
         this.container.handgun.nextFire = 0;
         this.container.handgun.fireRate = 350;
         this.container.handgun.maxAmmo = 80;
-        this.container.handgun.ammoLeft = 80;
+        this.container.handgun.ammoLeft = 8;
         this.container.handgun.maxRounds = 6;
         this.container.handgun.roundsLeft = 6;
         this.container.handgun.reloading = false;
@@ -391,6 +391,10 @@ var mainState = {
         this.container.currentWeapon.GUI = this.handgunGUI;
         this.container.currentWeapon.reloading = false;
         this.container.currentWeapon.cooldown = 0;
+        this.container.currentWeapon.ammoLeft = 
+        this.container.handgun.ammoLeft;
+        this.container.currentWeapon.roundsLeft = 
+        this.container.handgun.roundsLeft;
 
 
         /*
@@ -463,6 +467,59 @@ var mainState = {
             this.restartGame();
         }
 
+
+
+        /*
+        AIMING
+        */
+        dx = this.game.input.activePointer.worldX - this.container.currentWeapon.x;
+        dy = this.game.input.activePointer.worldY - this.container.currentWeapon.y;
+        //console.log('dy: ' + dy + ' dx: ' + dx);
+
+        //var roundedDy = Phaser.Math.floorTo(dy, 0);
+        roundedDx = Phaser.Math.floorTo(dx, 0);
+
+        roundedDy = Phaser.Math.floorTo(
+            this.container.currentWeapon.rotation, 0);
+
+        // TRY THIS -- if not, remove current weapon and do an if/else
+        // IF NOT -- Get rid of currentWeapon all together
+        this.container.currentWeapon.rotation = Math.atan2(dy, dx);
+
+
+        /*
+        SHOOTING
+        */
+        if (this.game.input.activePointer.isDown)
+        {
+            if (this.container.currentWeapon.ammoLeft > 0)
+            {
+                if (this.player.weapon == 'Shotgun' &&
+                    this.container.shotgun.roundsLeft > 0)
+                {
+                    this.shoot();
+                }
+                else if (this.player.weapon == 'Handgun' &&
+                    this.container.handgun.roundsLeft > 0)
+                {
+                    console.log('this.player.weapon == Handgun && this.container.handgun.reloading == fals');
+                    this.shoot();
+                }
+                else if (this.game.time.now - this.container.currentWeapon.cooldown > 
+                    this.container.currentWeapon.reloadTime)
+                {
+                    this.container.currentWeapon.roundsLeft = 
+                    this.container.currentWeapon.maxRounds;
+
+                    this.labelShotCounter.text = 
+                    this.container.currentWeapon.roundsLeft;
+
+                    this.shoot();
+                }
+            }
+        }
+
+
         /*
         Switching Weapon
         */
@@ -497,7 +554,7 @@ var mainState = {
 
                     this.container.shotgun.visible = true;
 
-                    //this.shotgunGUI.frame = SELECTED;
+                    this.shotgunGUI.frame = SELECTED;
 
 
                     // Weapon Successfully selected
@@ -530,7 +587,7 @@ var mainState = {
 
                     this.container.handgun.visible = true;
 
-                    //this.handgunGUI.frame = SELECTED;
+                    this.handgunGUI.frame = SELECTED;
 
                     this.weaponTimer = this.game.time.now;
                 }
@@ -574,24 +631,60 @@ var mainState = {
             }
         }
 
+
+
         /*
-        AIMING
+        Collision Detection
         */
-        dx = this.game.input.activePointer.worldX - this.container.currentWeapon.x;
-        dy = this.game.input.activePointer.worldY - this.container.currentWeapon.y;
-        //console.log('dy: ' + dy + ' dx: ' + dx);
-
-        //var roundedDy = Phaser.Math.floorTo(dy, 0);
-        roundedDx = Phaser.Math.floorTo(dx, 0);
-
-        roundedDy = Phaser.Math.floorTo(
-            this.container.currentWeapon.rotation, 0);
-
-        // TRY THIS -- if not, remove current weapon and do an if/else
-        // IF NOT -- Get rid of currentWeapon all together
-        this.container.currentWeapon.rotation = Math.atan2(dy, dx);
+            /*
+            ZOMBIE vs PLAYER
+            */
+        if (this.game.physics.arcade.overlap(this.container.player, this.zombie, 
+            this.restartGame, null, this))
+            alert('this.container + this.zombie');
+        if( this.game.physics.arcade.overlap(this.container.player, this.oneBalloon, 
+            this.restartGame, null, this))
+            alert('this.container + this.oneBalloon');
+        if( this.game.physics.arcade.overlap(this.container.player, this.twoBalloons, 
+            this.restartGame, null, this))
+            alert('this.container + this.twoBalloons');
+        if( this.game.physics.arcade.overlap(this.container.player, this.threeBalloons, 
+            this.restartGame, null, this))
+            alert('this.container + this.threeBalloons');
 
             /*
+            ZOMBIE W/ BALLOON vs BULLET
+            */
+        this.game.physics.arcade.overlap(this.oneBalloon, this.bullets, 
+            this.oneBalloonHandler, null, this); 
+
+        this.game.physics.arcade.overlap(this.twoBalloons, this.bullets, 
+            this.twoBalloonHandler, null, this); 
+
+        this.game.physics.arcade.overlap(this.threeBalloons, this.bullets, 
+            this.threeBalloonHandler, null, this); 
+
+
+            /*
+            ZOMBIE W/ BALLOON vs BLAST
+            */
+        this.game.physics.arcade.overlap(this.oneBalloon, this.blasts, 
+            function(zombie, blast) {
+                zombie.kill();
+            }, null, this); 
+
+        this.game.physics.arcade.overlap(this.twoBalloons, this.blasts, 
+            function(zombie, blast) {
+                zombie.kill();
+            }, null, this); 
+
+        this.game.physics.arcade.overlap(this.threeBalloons, this.blasts, 
+            function(zombie, blast) {
+                zombie.kill();
+            }, null, this); 
+
+
+                    /*
         if (roundedDy <= 0)
         {
             // TOP 
@@ -668,79 +761,6 @@ var mainState = {
                     Math.atan2(dy,dx);
             }
         }*/
-
-        /*
-        SHOOTING
-        */
-        if (this.game.input.activePointer.isDown)
-        {
-            if (this.container.currentWeapon.roundsLeft > 0)
-            {
-                this.shoot();
-            }
-            else if (this.game.time.now - this.container.currentWeapon.cooldown > 
-                this.container.currentWeapon.reloadTime)
-            {
-                this.container.currentWeapon.roundsLeft = 
-                this.container.currentWeapon.maxRounds;
-
-                this.labelShotCounter.text = 
-                this.container.currentWeapon.roundsLeft;
-
-                this.shoot();
-            }
-        }
-
-
-        /*
-        Collision Detection
-        */
-            /*
-            ZOMBIE vs PLAYER
-            */
-        if (this.game.physics.arcade.overlap(this.container.player, this.zombie, 
-            this.restartGame, null, this))
-            alert('this.container + this.zombie');
-        if( this.game.physics.arcade.overlap(this.container.player, this.oneBalloon, 
-            this.restartGame, null, this))
-            alert('this.container + this.oneBalloon');
-        if( this.game.physics.arcade.overlap(this.container.player, this.twoBalloons, 
-            this.restartGame, null, this))
-            alert('this.container + this.twoBalloons');
-        if( this.game.physics.arcade.overlap(this.container.player, this.threeBalloons, 
-            this.restartGame, null, this))
-            alert('this.container + this.threeBalloons');
-
-            /*
-            ZOMBIE W/ BALLOON vs BULLET
-            */
-        this.game.physics.arcade.overlap(this.oneBalloon, this.bullets, 
-            this.oneBalloonHandler, null, this); 
-
-        this.game.physics.arcade.overlap(this.twoBalloons, this.bullets, 
-            this.twoBalloonHandler, null, this); 
-
-        this.game.physics.arcade.overlap(this.threeBalloons, this.bullets, 
-            this.threeBalloonHandler, null, this); 
-
-
-            /*
-            ZOMBIE W/ BALLOON vs BLAST
-            */
-        this.game.physics.arcade.overlap(this.oneBalloon, this.blasts, 
-            function(zombie, blast) {
-                zombie.kill();
-            }, null, this); 
-
-        this.game.physics.arcade.overlap(this.twoBalloons, this.blasts, 
-            function(zombie, blast) {
-                zombie.kill();
-            }, null, this); 
-
-        this.game.physics.arcade.overlap(this.threeBalloons, this.blasts, 
-            function(zombie, blast) {
-                zombie.kill();
-            }, null, this); 
     },
 
 
@@ -1127,28 +1147,38 @@ var mainState = {
                 this.container.handgun.ammoLeft--;
                 this.container.handgun.roundsLeft--;
 
-                this.labelShotCounter.text = this.container.handgun.roundsLeft;
-                this.labelAmmo.text = this.container.handgun.ammoLeft;
+                this.container.currentWeapon.ammoLeft =
+                    this.container.handgun.ammoLeft;
+                this.container.currentWeapon.roundsLeft =
+                this.container.handgun.roundsLeft;
 
-                if (this.container.handgun.roundsLeft === 0)
+                if (this.container.handgun.ammoLeft > 0)
                 {
-                    this.container.handgun.cooldown = this.game.time.now;
-                    this.container.currentWeapon.cooldown = 
-                    this.container.handgun.cooldown;
+                    this.labelShotCounter.text = this.container.handgun.roundsLeft;
+                    this.labelAmmo.text = this.container.handgun.ammoLeft;
 
-                    this.container.handgun.reloading = true;
+                    if (this.container.handgun.roundsLeft == 0)
+                    {
+                        this.container.handgun.cooldown = this.game.time.now;
+                        this.container.currentWeapon.cooldown = 
+                        this.container.handgun.cooldown;
 
-                    this.handgunGUI.frame = RELOAD;
+                        this.container.handgun.reloading = true;
+
+                        this.handgunGUI.frame = RELOAD;
+                    }
+
+                    console.log(Phaser.Math.floorTo(this.container.handgun.rotation, 0));
+
+                    bullet.checkWorldBounds = true;
+                    bullet.outOfBoundsKill = true;
+
+
+                    this.container.handgun.nextFire =
+                    this.game.time.now + this.container.handgun.fireRate;
                 }
-
-                console.log(Phaser.Math.floorTo(this.container.handgun.rotation, 0));
-
-                bullet.checkWorldBounds = true;
-                bullet.outOfBoundsKill = true;
-
-
-                this.container.handgun.nextFire =
-                this.game.time.now + this.container.handgun.fireRate;
+                else
+                    this.handgunGUI.frame = NO_AMMO;                    
             }
         }
         else if (this.player.weapon == 'Shotgun' &&
@@ -1171,32 +1201,37 @@ var mainState = {
                 shotgunBlast.animations.play('blast', 17, false, true);
 
                 this.container.shotgun.ammoLeft--;
-
-                if (this.container.shotgun.ammoLeft === 0)
-                {
-                    this.shotgunGUI.frame = NO_AMMO;                    
-                }
-
                 this.container.shotgun.roundsLeft--;
 
-                this.labelShotCounter.text = 
+                this.container.currentWeapon.ammoLeft =
+                    this.container.shotgun.ammoLeft;
+                this.container.currentWeapon.roundsLeft =
                 this.container.shotgun.roundsLeft;
-                this.labelAmmo.text = this.container.shotgun.ammoLeft;
 
-                if (this.container.shotgun.roundsLeft === 0)
+
+                if (this.container.shotgun.ammoLeft > 0)
                 {
-                    this.container.shotgun.cooldown = this.game.time.now;
-                    this.container.currentWeapon.cooldown = 
-                    this.container.shotgun.cooldown;
+                    this.labelShotCounter.text = 
+                    this.container.shotgun.roundsLeft;
+                    this.labelAmmo.text = this.container.shotgun.ammoLeft;
 
-                    this.container.shotgun.reloading = true;
-                    this.container.currentWeapon.reloading = true;
+                    if (this.container.shotgun.roundsLeft === 0)
+                    {
+                        this.container.shotgun.cooldown = this.game.time.now;
+                        this.container.currentWeapon.cooldown = 
+                        this.container.shotgun.cooldown;
 
-                    this.shotgunGUI.frame = RELOAD;
+                        this.container.shotgun.reloading = true;
+                        this.container.currentWeapon.reloading = true;
+
+                        this.shotgunGUI.frame = RELOAD;
+                    }
+
+                    this.container.shotgun.nextFire =
+                    this.game.time.now + this.container.shotgun.fireRate;
                 }
-
-                this.container.shotgun.nextFire =
-                this.game.time.now + this.container.shotgun.fireRate;
+                else
+                    this.shotgunGUI.frame = NO_AMMO;                    
             }
         }
     }
