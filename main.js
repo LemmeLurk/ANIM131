@@ -154,8 +154,8 @@ var mainState = {
         /*
         Timers
         */
-        //this.timer = game.time.events.loop(rateOfSpawn, 
-        //    this.addZombieHorde, this);
+        this.timer = game.time.events.loop(rateOfSpawn, 
+            this.addZombieHorde, this);
 
 
         this.reloadTimer = 
@@ -237,7 +237,12 @@ var mainState = {
         this.cloud.body.moves = false;
 
 
+
         /*TEST AREA*/
+        /*TEST AREA*/
+        /*TEST AREA*/
+
+        /*
         this.upContainer = this.game.add.sprite(0, 0, null);
 
         upX = cloudWidth/2 + 200;
@@ -280,6 +285,18 @@ var mainState = {
         this.game.physics.arcade.enable(this.upContainer.straight);
 
 
+        this.zom = game.add.sprite(350, aboveTheCloud, 
+            'zombieSpritesheet', 0);
+        this.zom.enableBody = true;
+        this.game.physics.arcade.enable(this.zom);
+        */
+
+
+        /*TEST AREA*/
+        /*TEST AREA*/
+        /*TEST AREA*/
+
+
         /*
         PLAYER
         */
@@ -318,7 +335,7 @@ var mainState = {
         this.container.handgun.nextFire = 0;
         this.container.handgun.fireRate = 350;
         this.container.handgun.maxAmmo = 80;
-        this.container.handgun.ammoLeft = 8;
+        this.container.handgun.ammoLeft = 80;
         this.container.handgun.maxRounds = 6;
         this.container.handgun.roundsLeft = 6;
         this.container.handgun.reloading = false;
@@ -682,6 +699,30 @@ var mainState = {
             function(zombie, blast) {
                 zombie.kill();
             }, null, this); 
+
+
+        /* TEST AREA */
+        /* TEST AREA */
+        /* TEST AREA */
+        /*
+        this.game.physics.arcade.overlap(this.zom, this.bullets,
+            function(zombie, bullet){
+                zombie.body.gravity.y = 1000;
+            }, null, this);
+
+        this.game.physics.arcade.collide(this.zom, this.cloud,
+            function(zombie, cloud){
+                while ()
+                if (zombie.body.x < this.container.player.body.x)
+                    zombie.body.velocity.x = 20;
+                else
+                    zombie.body.velocity.x = -20;
+            }, null, this);
+*/
+        /* TEST AREA */
+        /* TEST AREA */
+        /* TEST AREA */
+
 
 
                     /*
