@@ -152,6 +152,71 @@ var mainState = {
 
 
         /*
+        Timers
+        */
+        //this.timer = game.time.events.loop(rateOfSpawn, 
+        //    this.addZombieHorde, this);
+
+
+        this.reloadTimer = 
+            this.game.time.create(this.game, false);
+
+
+        this.weaponTimer =
+            this.game.time.now;
+
+        this.cooldown = this.game.time.now;
+
+        // Add timer :: Increase stats every 1.5sec
+        this.gameplayTimer = 
+            //game.time.events.loop(10000, this.increaseStats, this);
+            game.time.events.loop(10000, this.increaseStats, this);
+
+
+        /*
+        Player Score :: Label
+        */ 
+        this.score = 0;
+        
+        this.labelScore = game.add.text(20, 20, "0", {
+            font:
+                "30px Arial", fill: "#ffffff" });
+
+        /*
+        Shot Counter :: Text and Label
+        */
+        this.shotCounter = 6;
+
+        this.labelShotCounter = 
+            game.add.text(200, 200, "6", 
+                {font: "30px Arial", fill: "#ffffff"});
+
+        /*
+        Zombie Wave Text
+        */
+        this.WaveGaugeText = this.game.add.text(
+                0, this.game.height - 20, "Wave: ",
+                {font: "20px Arial", fill: "#ffffff"});
+
+        /*
+        Zombie Wave Gauge
+        */
+        this.WaveGauge = this.game.add.sprite(
+            this.WaveGaugeText.width, this.game.height - 10,'WaveGauge');
+
+        this.WaveGauge.cropEnabled = true;
+
+
+        /*
+        WeaponGUI Layout
+        */
+        this.handgunGUI = this.game.add.sprite(
+            this.game.width - 140, this.game.height - 70, "handgunGUI", SELECTED);
+        this.shotgunGUI = this.game.add.sprite(
+            this.handgunGUI.x+50, this.game.height - 70, "shotgunGUI", DEFAULT);
+
+
+        /*
         Cloud Object
         */
         var cloudX = this.game.world.centerX - (cloudWidth/2);
@@ -246,8 +311,11 @@ var mainState = {
         this.container.handgun.nextFire = 0;
         this.container.handgun.fireRate = 350;
         this.container.handgun.maxAmmo = 80;
+        this.container.handgun.ammoLeft = 80;
         this.container.handgun.maxRounds = 6;
         this.container.handgun.roundsLeft = 6;
+        this.container.handgun.reloading = false;
+        this.container.handgun.reloadTime = 1500;
 
                 /*
                 Handgun Bullets
@@ -272,11 +340,14 @@ var mainState = {
 
         this.container.shotgun.visible = false;
 
-        this.container.handgun.nextFire = 0;
-        this.container.handgun.fireRate = 500;
-        this.container.handgun.maxAmmo = 30;
-        this.container.handgun.maxRounds = 6;
-        this.container.handgun.roundsLeft = 6;
+        this.container.shotgun.nextFire = 0;
+        this.container.shotgun.fireRate = 1550;
+        this.container.shotgun.maxAmmo = 30;
+        this.container.shotgun.ammoLeft = 30;
+        this.container.shotgun.maxRounds = 6;
+        this.container.shotgun.roundsLeft = 6;
+        this.container.shotgun.reloading = false;
+        this.container.shotgun.reloadTime = 1000;
 
                 /*
                 Shotgun Blast Animation
@@ -291,10 +362,6 @@ var mainState = {
             blast.killOnComplete = true;
             blast.anchor.setTo(0.5, 0.5);
         });
-
-        //this.container.blast.visible = false;
-
-
 
 
         /*
@@ -312,6 +379,8 @@ var mainState = {
         CONATINER PROPERTIES
         */
         this.container.currentWeapon = this.container.handgun;
+        this.container.currentWeapon.GUI = this.handgunGUI;
+        this.container.currentWeapon.reloading = false;
 
 
         /*
@@ -374,71 +443,6 @@ var mainState = {
         this.threeAlone.createMultiple(50, 'threeAlone');
         this.threeAlone.setAll('body.velocity.y', -60);
 
-
-
-        /*
-        Timers
-        */
-        //this.timer = game.time.events.loop(rateOfSpawn, 
-        //    this.addZombieHorde, this);
-
-
-        this.reloadTimer = 
-            this.game.time.create(this.game, false);
-
-
-        this.weaponTimer =
-            this.game.time.now;
-
-        this.cooldown = this.game.time.now;
-
-        // Add timer :: Increase stats every 1.5sec
-        this.gameplayTimer = 
-            //game.time.events.loop(10000, this.increaseStats, this);
-            game.time.events.loop(10000, this.increaseStats, this);
-
-
-        /*
-        Player Score :: Label
-        */ 
-        this.score = 0;
-        
-        this.labelScore = game.add.text(20, 20, "0", {
-            font:
-                "30px Arial", fill: "#ffffff" });
-
-        /*
-        Shot Counter :: Text and Label
-        */
-        this.shotCounter = 6;
-
-        this.labelShotCounter = 
-            game.add.text(200, 200, "6", 
-                {font: "30px Arial", fill: "#ffffff"});
-
-        /*
-        Zombie Wave Text
-        */
-        this.WaveGaugeText = this.game.add.text(
-                0, this.game.height - 20, "Wave: ",
-                {font: "20px Arial", fill: "#ffffff"});
-
-        /*
-        Zombie Wave Gauge
-        */
-        this.WaveGauge = this.game.add.sprite(
-            this.WaveGaugeText.width, this.game.height - 10,'WaveGauge');
-
-        this.WaveGauge.cropEnabled = true;
-
-
-        /*
-        WeaponGUI Layout
-        */
-        this.handgunGUI = this.game.add.sprite(
-            this.game.width - 140, this.game.height - 70, "handgunGUI", SELECTED);
-        this.shotgunGUI = this.game.add.sprite(
-            this.handgunGUI.x+50, this.game.height - 70, "shotgunGUI", DEFAULT);
    },
 
     update: function () 
@@ -455,48 +459,65 @@ var mainState = {
         if (this.spacebar.isDown &&
             this.game.time.now - this.weaponTimer > 350)
         {
-            console.log(this.player.weapon);
+            // Switch from Handgun to shotgun
             if (this.player.weapon == 'Handgun')
             {
-                // TODO add check for ammo and handle case 
-                // Unselect Handgun
-                this.handgunGUI.frame = DEFAULT;
-                this.container.handgun.visible = false;
+                if (this.container.shotgun.ammoLeft > 0 &&
+                    this.container.shotgun.reloading == false)
+                {
+                    this.container.currentWeapon = 
+                        this.container.shotgun;
 
-                // Switch to shotgun
-                this.player.weapon = 'Shotgun';
-                this.container.currentWeapon = 
-                    this.container.shotgun;
+                    this.container.currentWeapon.GUI = 
+                        this.handgunGUI;
+
+                    // Unselect Handgun
+                    // This check should be unnecessary.. how else would you be comming
+                    // from handgun if you didn't still have ammo?
+                    this.handgunGUI.frame = 
+                    this.container.handgun.ammoLeft > 0 ? DEFAULT : NO_AMMO;
+
+                    this.container.handgun.visible = false;
+
+                    // Switch to shotgun
+                    this.player.weapon = 'Shotgun';
+
+                    this.container.shotgun.visible = true;
+
+                    this.shotgunGUI.frame = SELECTED;
 
 
-                this.container.shotgun.visible = true;
-
-                this.shotgunGUI.frame = SELECTED;
-
-
-                // Weapon Successfully selected
-                this.weaponTimer = this.game.time.now;
+                    // Weapon Successfully selected
+                    this.weaponTimer = this.game.time.now;
+                }
             }
             else if (this.game.time.now - this.weaponTimer > 350)
             {
-                // TODO add check for ammo and handle case 
-                // Unselect Shotgun
-                this.shotgunGUI.frame = DEFAULT;
+                if (this.container.handgun.ammoLeft > 0 &&
+                    this.container.handgun.reloading == false)
+                {
+                    this.container.currentWeapon = 
+                        this.container.handgun;
 
-                this.container.shotgun.visible = false;
+                    this.container.currentWeapon.GUI = 
+                        this.shotgunGUI;
 
-                // Switch to Handgun
-                this.player.weapon = 'Handgun';
-                this.container.currentWeapon = 
-                    this.container.handgun;
+                    // Unselect Shotgun
+                    this.shotgunGUI.frame = 
+                    this.container.shotgun.ammoLeft > 0 ? DEFAULT : NO_AMMO;
 
-                this.container.handgun.visible = true;
+                    this.container.shotgun.visible = false;
 
-                this.handgunGUI.frame = SELECTED;
+                    // Switch to Handgun
+                    this.player.weapon = 'Handgun';
 
-                this.weaponTimer = this.game.time.now;
+                    this.container.handgun.visible = true;
+
+                    this.handgunGUI.frame = SELECTED;
+
+                    this.weaponTimer = this.game.time.now;
+                }
             }
-            console.log(this.player.weapon);
         }
 
         /*
@@ -599,19 +620,23 @@ var mainState = {
         */
         if (this.game.input.activePointer.isDown)
         {
-            this.shoot();
-            /*
-            if (this.shotCounter > 0)
+            if (this.container.currentWeapon.roundsLeft > 0)
             {
                 this.shoot();
             }
-            else if (this.game.time.now - this.cooldown > 1500)
+            else if (this.game.time.now - this.cooldown > 
+                this.container.currentWeapon.reloadTime)
             {
-                this.shotCounter = 6;
-                this.labelShotCounter.text = this.shotCounter;
+                this.container.currentWeapon.roundsLeft = 
+                this.container.currentWeapon.maxRounds;
+
+                this.labelShotCounter.text = 
+                this.container.currentWeapon.roundsLeft;
+
+                this.container.currentWeapon.GUI.frame = SELECTED;
+
                 this.shoot();
             }
-            */
         }
 
 
@@ -651,13 +676,19 @@ var mainState = {
             ZOMBIE W/ BALLOON vs BLAST
             */
         this.game.physics.arcade.overlap(this.oneBalloon, this.blasts, 
-            this.oneBalloonHandler, null, this); 
+            function(zombie, blast) {
+                zombie.kill();
+            }, null, this); 
 
         this.game.physics.arcade.overlap(this.twoBalloons, this.blasts, 
-            this.twoBalloonHandler, null, this); 
+            function(zombie, blast) {
+                zombie.kill();
+            }, null, this); 
 
         this.game.physics.arcade.overlap(this.threeBalloons, this.blasts, 
-            this.threeBalloonHandler, null, this); 
+            function(zombie, blast) {
+                zombie.kill();
+            }, null, this); 
     },
 
 
@@ -1016,100 +1047,97 @@ var mainState = {
 
     shoot: function () 
     {
-        if (this.game.time.now > 
-            this.container.currentWeapon.nextFire)
+        if (this.player.weapon == 'Handgun' &&
+            this.game.time.now > this.container.handgun.nextFire)
         {
-            this.container.currentWeapon.nextFire =
-            this.game.time.now + this.container.currentWeapon.fireRate;
+            var bullet = this.bullets.getFirstExists(false);
 
-            if (this.player.weapon == 'Handgun')
+            if (bullet)
             {
-                var bullet = this.bullets.getFirstExists(false);
+                bullet.frame = game.rnd.integerInRange(0, 6);
+                bullet.exists = true;
+                bullet.position.set(
+                    this.container.handgun.x, 
+                    this.container.handgun.y);
 
-                if (bullet)
+                this.game.physics.arcade.enable(bullet);
+
+                bullet.body.rotation = 
+                this.container.handgun.rotation + 
+                this.game.math.degToRad(-90);
+
+                var magnitude = 500;
+                var angle = bullet.body.rotation + Math.PI / 2;
+
+                bullet.body.velocity.x = magnitude * Math.cos(angle);
+                bullet.body.velocity.y = magnitude * Math.sin(angle);
+
+                this.container.handgun.ammoLeft--;
+                this.container.handgun.roundsLeft--;
+
+                this.labelShotCounter.text = this.container.handgun.roundsLeft;
+
+                if (this.container.handgun.roundsLeft === 0)
                 {
-                    bullet.frame = game.rnd.integerInRange(0, 6);
-                    bullet.exists = true;
-                    bullet.position.set(
-                        this.container.handgun.x, 
-                        this.container.handgun.y);
+                    this.cooldown = this.game.time.now;
 
-                    this.game.physics.arcade.enable(bullet);
+                    this.container.handgun.reloading = true;
 
-                    bullet.body.rotation = 
-                    this.container.handgun.rotation + 
-                    this.game.math.degToRad(-90);
-
-                    var magnitude = 500;
-                    var angle = bullet.body.rotation + Math.PI / 2;
-
-                    bullet.body.velocity.x = magnitude * Math.cos(angle);
-                    bullet.body.velocity.y = magnitude * Math.sin(angle);
-
-                    this.shotCounter--;
-                    this.labelShotCounter.text = this.shotCounter;
-
-                    if (this.shotCounter === 0)
-                        this.cooldown = this.game.time.now;
-
-                    console.log(Phaser.Math.floorTo(this.container.handgun.rotation, 0));
-
-                    bullet.checkWorldBounds = true;
-                    bullet.outOfBoundsKill = true;
+                    this.handgunGUI.frame = RELOAD;
                 }
+
+                console.log(Phaser.Math.floorTo(this.container.handgun.rotation, 0));
+
+                bullet.checkWorldBounds = true;
+                bullet.outOfBoundsKill = true;
+
+
+                this.container.handgun.nextFire =
+                this.game.time.now + this.container.handgun.fireRate;
             }
-            else if (this.game.time.now > this.container.currentWeapon.nextFire)
+        }
+        else if (this.player.weapon == 'Shotgun' &&
+            this.game.time.now > this.container.shotgun.nextFire)
+        {
+            var shotgunBlast = this.blasts.getFirstExists(false); 
+
+            if (shotgunBlast)
             {
-                //this.anim.onComplete.add(function() {
-                //    this.deadGroup.add(this);
-                //}, this.container.shotgun);
+                shotgunBlast.exists = true;
 
-                var shotgunBlast = this.blasts.getFirstExists(false); 
+                this.game.physics.arcade.enable(shotgunBlast);
 
-                if (shotgunBlast)
+                this.container.shotgun.addChild(shotgunBlast);
+
+                shotgunBlast.y = 0;
+                shotgunBlast.x = 190;
+
+
+                shotgunBlast.animations.play('blast', 17, false, true);
+
+                this.container.shotgun.ammoLeft--;
+
+                if (this.container.shotgun.ammoLeft === 0)
                 {
-                    shotgunBlast.exists = true;
-                    /*
-                    shotgunBlast.position.set(
-                        this.container.shotgun.x + 120, 
-                        this.container.shotgun.y);
-*/
-
-                    this.game.physics.arcade.enable(shotgunBlast);
-
-                    //shotgunBlast.body.rotation = 
-                    //this.container.currentWeapon.rotation + 
-                    //this.game.math.degToRad(-90);
-
-                    //var magnitude = 1000;
-                    //var angle = 
-                    //    shotgunBlast.body.rotation + Math.PI / 2;
-
-                    //shotgunBlast.body.velocity.x = magnitude * Math.cos(angle);
-                    //shotgunBlast.body.velocity.y = magnitude * Math.sin(angle);
-
-                    //shotgunBlast.rotation =
-                    //    this.container.currentWeapon.rotation;
-
-                    this.container.shotgun.addChild(shotgunBlast);
-
-                    shotgunBlast.y = 0;
-                    shotgunBlast.x = 190;
-
-
-                    shotgunBlast.animations.play('blast', 17, false, true);
-
-                    this.container.shotgun.maxAmmo--;
-                    this.container.shotgun.roundsLeft--;
-                    this.labelShotCounter.text = 
-                    this.container.shotgun.roundsLeft;
-
-                    if (this.container.shotgun.roundsLeft === 0)
-                        this.cooldown = this.game.time.now;
-
-                    this.container.currentWeapon.nextFire =
-                    this.game.time.now + this.container.currentWeapon.fireRate;
+                    this.shotgunGUI.frame = NO_AMMO;                    
                 }
+
+                this.container.shotgun.roundsLeft--;
+
+                this.labelShotCounter.text = 
+                this.container.shotgun.roundsLeft;
+
+                if (this.container.shotgun.roundsLeft === 0)
+                {
+                    this.cooldown = this.game.time.now;
+
+                    this.container.shotgun.reloading = true;
+
+                    this.shotgunGUI.frame = RELOAD;
+                }
+
+                this.container.shotgun.nextFire =
+                this.game.time.now + this.container.shotgun.fireRate;
             }
         }
     }
