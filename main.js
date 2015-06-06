@@ -192,6 +192,13 @@ var mainState = {
                 {font: "30px Arial", fill: "#ffffff"});
 
         /*
+        Ammo Counter :: Text and Label
+        */
+        this.labelAmmo = 
+            game.add.text(0, 200, "80", 
+                {font: "30px Arial", fill: "#ffffff"});
+
+        /*
         Zombie Wave Text
         */
         this.WaveGaugeText = this.game.add.text(
@@ -316,6 +323,7 @@ var mainState = {
         this.container.handgun.roundsLeft = 6;
         this.container.handgun.reloading = false;
         this.container.handgun.reloadTime = 1500;
+        this.container.handgun.cooldown = 0;
 
                 /*
                 Handgun Bullets
@@ -348,6 +356,7 @@ var mainState = {
         this.container.shotgun.roundsLeft = 6;
         this.container.shotgun.reloading = false;
         this.container.shotgun.reloadTime = 1000;
+        this.container.shotgun.cooldown = 0;
 
                 /*
                 Shotgun Blast Animation
@@ -381,6 +390,7 @@ var mainState = {
         this.container.currentWeapon = this.container.handgun;
         this.container.currentWeapon.GUI = this.handgunGUI;
         this.container.currentWeapon.reloading = false;
+        this.container.currentWeapon.cooldown = 0;
 
 
         /*
@@ -469,13 +479,16 @@ var mainState = {
                         this.container.shotgun;
 
                     this.container.currentWeapon.GUI = 
-                        this.handgunGUI;
+                        this.shotgunGUI;
 
                     // Unselect Handgun
                     // This check should be unnecessary.. how else would you be comming
                     // from handgun if you didn't still have ammo?
-                    this.handgunGUI.frame = 
-                    this.container.handgun.ammoLeft > 0 ? DEFAULT : NO_AMMO;
+                    if (this.container.handgun.ammoLeft > 0 &&
+                        this.container.handgun.reloading == false)
+                    {
+                        this.handgunGUI.frame = DEFAULT;
+                    }
 
                     this.container.handgun.visible = false;
 
@@ -484,13 +497,14 @@ var mainState = {
 
                     this.container.shotgun.visible = true;
 
-                    this.shotgunGUI.frame = SELECTED;
+                    //this.shotgunGUI.frame = SELECTED;
 
 
                     // Weapon Successfully selected
                     this.weaponTimer = this.game.time.now;
                 }
             }
+            // Switch TO handgun
             else if (this.game.time.now - this.weaponTimer > 350)
             {
                 if (this.container.handgun.ammoLeft > 0 &&
@@ -500,11 +514,14 @@ var mainState = {
                         this.container.handgun;
 
                     this.container.currentWeapon.GUI = 
-                        this.shotgunGUI;
+                        this.handgunGUI;
 
                     // Unselect Shotgun
-                    this.shotgunGUI.frame = 
-                    this.container.shotgun.ammoLeft > 0 ? DEFAULT : NO_AMMO;
+                    if (this.container.shotgun.ammoLeft > 0 &&
+                        this.container.shotgun.reloading == false)
+                    {
+                        this.shotgunGUI.frame = DEFAULT;
+                    }
 
                     this.container.shotgun.visible = false;
 
@@ -513,10 +530,47 @@ var mainState = {
 
                     this.container.handgun.visible = true;
 
-                    this.handgunGUI.frame = SELECTED;
+                    //this.handgunGUI.frame = SELECTED;
 
                     this.weaponTimer = this.game.time.now;
                 }
+            }
+        }
+
+            /*
+            Switching Weapon Layout Graphics
+            */
+            // Shotgun Done reloading
+        if (this.container.shotgun.reloading == true &&
+            this.game.time.now - this.container.shotgun.cooldown > 
+            this.container.shotgun.reloadTime)
+        {
+            this.container.shotgun.reloading = false;
+
+            // Player using Shotgun, but it was reloading
+            if (this.player.weapon == 'Shotgun')
+            {
+                this.shotgunGUI.frame = SELECTED;
+            }
+            // Player using Handgun, but show Shotgun is ready
+            else
+            {
+                this.shotgunGUI.frame = DEFAULT;
+            }
+        }
+        else if (this.container.handgun.reloading == true &&
+            this.game.time.now - this.container.handgun.cooldown >
+            this.container.handgun.reloadTime)
+        {
+            this.container.handgun.reloading = false;
+
+            if (this.player.weapon == 'Handgun')
+            {
+                this.handgunGUI.frame = SELECTED;
+            }
+            else
+            {
+                this.handgunGUI.frame = DEFAULT;
             }
         }
 
@@ -624,7 +678,7 @@ var mainState = {
             {
                 this.shoot();
             }
-            else if (this.game.time.now - this.cooldown > 
+            else if (this.game.time.now - this.container.currentWeapon.cooldown > 
                 this.container.currentWeapon.reloadTime)
             {
                 this.container.currentWeapon.roundsLeft = 
@@ -632,8 +686,6 @@ var mainState = {
 
                 this.labelShotCounter.text = 
                 this.container.currentWeapon.roundsLeft;
-
-                this.container.currentWeapon.GUI.frame = SELECTED;
 
                 this.shoot();
             }
@@ -1076,10 +1128,13 @@ var mainState = {
                 this.container.handgun.roundsLeft--;
 
                 this.labelShotCounter.text = this.container.handgun.roundsLeft;
+                this.labelAmmo.text = this.container.handgun.ammoLeft;
 
                 if (this.container.handgun.roundsLeft === 0)
                 {
-                    this.cooldown = this.game.time.now;
+                    this.container.handgun.cooldown = this.game.time.now;
+                    this.container.currentWeapon.cooldown = 
+                    this.container.handgun.cooldown;
 
                     this.container.handgun.reloading = true;
 
@@ -1126,12 +1181,16 @@ var mainState = {
 
                 this.labelShotCounter.text = 
                 this.container.shotgun.roundsLeft;
+                this.labelAmmo.text = this.container.shotgun.ammoLeft;
 
                 if (this.container.shotgun.roundsLeft === 0)
                 {
-                    this.cooldown = this.game.time.now;
+                    this.container.shotgun.cooldown = this.game.time.now;
+                    this.container.currentWeapon.cooldown = 
+                    this.container.shotgun.cooldown;
 
                     this.container.shotgun.reloading = true;
+                    this.container.currentWeapon.reloading = true;
 
                     this.shotgunGUI.frame = RELOAD;
                 }
