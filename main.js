@@ -154,8 +154,8 @@ var mainState = {
         /*
         Timers
         */
-        //this.timer = game.time.events.loop(rateOfSpawn, 
-        //    this.addZombieHorde, this);
+        this.timer = game.time.events.loop(rateOfSpawn, 
+            this.addZombieHorde, this);
 
 
         this.reloadTimer = 
@@ -236,6 +236,9 @@ var mainState = {
         this.cloud.body.immovable = true;
         this.cloud.body.moves = false;
         
+            /*
+            Cloud Platform :: Used for Zombies to Walk on
+            */
         this.cloudPlatform = this.game.add.sprite(
             this.game.world.centerX - (cloudWidth/2), 234);
         this.game.physics.arcade.enable(this.cloudPlatform,
@@ -553,10 +556,8 @@ var mainState = {
         /*
         Switching Weapon
         */
-        if ((this.spacebar.isDown &&
-            this.game.time.now - this.weaponTimer > 350) ||
-            (game.input.x > this.handgunGUI.x && 
-            game.input.y < this.handgunGUI.y - 50))
+        if (this.spacebar.isDown &&
+            this.game.time.now - this.weaponTimer > 350)
         {
             // Switch from Handgun to shotgun
             if (this.player.weapon == 'Handgun')
@@ -647,7 +648,8 @@ var mainState = {
                 this.shotgunGUI.frame = DEFAULT;
             }
         }
-        else if (this.container.handgun.reloading == true &&
+
+        if (this.container.handgun.reloading == true &&
             this.game.time.now - this.container.handgun.cooldown >
             this.container.handgun.reloadTime)
         {
@@ -672,16 +674,16 @@ var mainState = {
             ZOMBIE vs PLAYER
             */
         if (this.game.physics.arcade.overlap(this.container.player, this.zombie, 
-            this.restartGame, null, this))
+            this.restartGame, this.confirmDeath, this))
             alert('this.container + this.zombie');
         if( this.game.physics.arcade.overlap(this.container.player, this.oneBalloon, 
-            this.restartGame, null, this))
+            this.restartGame, this.confirmDeath, this))
             alert('this.container + this.oneBalloon');
         if( this.game.physics.arcade.overlap(this.container.player, this.twoBalloons, 
-            this.restartGame, null, this))
+            this.restartGame, this.confirmDeath, this))
             alert('this.container + this.twoBalloons');
         if( this.game.physics.arcade.overlap(this.container.player, this.threeBalloons, 
-            this.restartGame, null, this))
+            this.restartGame, this.confirmDeath, this))
             alert('this.container + this.threeBalloons');
 
             /*
@@ -700,6 +702,11 @@ var mainState = {
             /*
             ZOMBIE W/ BALLOON vs BLAST
             */
+        this.game.physics.arcade.overlap(this.zombie, this.blasts, 
+            function(zombie, blast) {
+                zombie.kill();
+            }, null, this); 
+
         this.game.physics.arcade.overlap(this.oneBalloon, this.blasts, 
             function(zombie, blast) {
                 zombie.kill();
@@ -724,8 +731,8 @@ var mainState = {
                 zombie.body.gravity.y = 1000;
             }, null, this);
 
-        this.game.physics.arcade.collide(this.zom, this.cloudPlatform,
-            function(zombie, cloud){
+        this.game.physics.arcade.collide(this.cloudPlatform, this.zombie,
+            function(cloud, zombie){
                 // TODO Add Zombie Walking animation
                 if (zombie.body.x < this.container.player.body.x)
                     zombie.body.velocity.x = 20;
@@ -830,6 +837,20 @@ var mainState = {
         _currentNumberWeights = numberWeights.first;
 
         game.state.start('main');
+    },
+
+
+    confirmDeath: function(player, zombie)
+    {
+        zombie.enableBody = true;
+        /*
+        if (zombie.body.y + zombie.height == 210 - 50 ||
+            zombie.body.y + 64 == 210)
+*/
+        if (player.body.hitLeft() || player.body.hitRight)
+            return true;
+        else
+            return false;
     },
 
 
