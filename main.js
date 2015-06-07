@@ -65,6 +65,9 @@ var SELECTED = 1;
 var RELOAD = 2;
 var NO_AMMO = 3;
 
+// Zombie Tween
+var tween;
+
 var windowWidth = $(window).width();
 var windowHeight = $(window).height();
 
@@ -119,6 +122,16 @@ var mainState = {
             'assets/ShotgunBlast.png', 141, 64, 17);
 
         /*
+        Zombie Animation
+        */
+            /*
+            WALKING
+            */
+        game.load.spritesheet('zombieWalking',
+            'assets/ZombieWalking.png', 43, 78);
+
+
+        /*
         Weapon GUI
         */
             /*
@@ -154,10 +167,13 @@ var mainState = {
 
 
         /*
-        Timers
+        TIMERS
         */
-        //this.timer = game.time.events.loop(rateOfSpawn, 
-        //    this.addZombieHorde, this);
+            /*
+            SPAWN ZOMBIES
+            */
+        this.timer = game.time.events.loop(rateOfSpawn, 
+            this.addZombieHorde, this);
 
 
         this.reloadTimer = 
@@ -224,11 +240,6 @@ var mainState = {
         this.shotgunGUI = this.game.add.sprite(
             this.handgunGUI.x+50, this.game.height - 70, "shotgunGUI", DEFAULT);
 
-        
-        /*
-        Reload Gauge
-        */
-        this.reloadGauge = game.add.graphics(300,300);
 
         /*
         Cloud Object
@@ -244,14 +255,15 @@ var mainState = {
         this.cloud.body.moves = false;
         
             /*
-            Cloud Platform :: Used for Zombies to Walk on
+            Cloud Platform
+                Used for Zombies to Walk on
             */
         this.cloudPlatform = this.game.add.sprite(
-            this.game.world.centerX - (cloudWidth/2) - 10, 234);
+            this.game.world.centerX - (cloudWidth/2), 234);
         this.game.physics.arcade.enable(this.cloudPlatform,
             Phaser.Physics.ARCADE);
 
-        this.cloudPlatform.body.setSize(cloudWidth - 10, 20);
+        this.cloudPlatform.body.setSize(cloudWidth - 55, 20, 28, 0);
 
         this.cloudPlatform.body.immovable = true;
         this.cloudPlatform.moves = false;
@@ -310,11 +322,20 @@ var mainState = {
 
         // 102 is the LEFT EDGE of Cloud
         // 840 is the RIGHT EDGE of Cloud
-        this.zom = game.add.sprite(102, aboveTheCloud, 
-            'zombieSpritesheet', 0);
+        this.zom = game.add.sprite(this.game.world.centerX - (cloudWidth/2) - 14, aboveTheCloud + 30, 
+            'zombieWalking', 0);
         this.zom.enableBody = true;
         this.game.physics.arcade.enable(this.zom, 
             Phaser.Physics.ARCADE);
+        this.zom.body.setSize(35, 66);
+        this.zom.animations.add('walkRight',
+            [0,1,2,3,4,5,6,7,8,9,10,11],
+            6, 
+            true);
+        this.zom.animations.add('walkLeft',
+            [12,13,14,15,16,17,18,19,20,21,22,23],
+            6, 
+            true);
 
 
         /*TEST AREA*/
@@ -416,7 +437,8 @@ var mainState = {
 
 
         /*
-        CONTAINER PHYSICS
+        CONTAINER 
+        PHYSICS
         */
         this.game.physics.arcade.enable(this.container, Phaser.Physics.ARCADE);
 
@@ -427,7 +449,8 @@ var mainState = {
             Phaser.Physics.ARCADE);
 
         /*
-        CONATINER PROPERTIES
+        CONATINER 
+        PROPERTIES
         */
         this.container.currentWeapon = this.container.handgun;
         this.container.currentWeapon.GUI = this.handgunGUI;
@@ -441,31 +464,50 @@ var mainState = {
 
 
         /*
-        Zombies :: No Balloons
+        ZOMBIES
         */
+            /*
+            NO BALLOONS
+            */
         this.zombie = game.add.group();
         this.zombie.enableBody = true;
-        this.zombie.createMultiple(500, 'zombieSpritesheet', 0);
+        this.zombie.createMultiple(500, 'zombieWalking', 0);
         this.zombie.setAll('body.gravity.y', 1000);
         this.zombie.forEach(function(zombie){
+            zombie.animations.add('walkRight',
+                [0,1,2,3,4,5,6,7,8,9,10,11],
+                6, 
+                true);
+            zombie.animations.add('walkLeft',
+                [12,13,14,15,16,17,18,19,20,21,22,23],
+                6, 
+                true);
+            zombie.body.setSize(35, 66);
             zombie.rate = 0;
         });
 
-        /*
-        Zombies :: 1 Balloon
-        */
+            /*
+            ONE BALLOON
+            */
         this.oneBalloon = game.add.group();
         this.oneBalloon.enableBody = true;
         this.oneBalloon.createMultiple(500, 'zombieSpritesheet', 1);
         this.oneBalloon.forEach(function(zombie){
             // Zombies body only
+            this.game.physics.arcade.enable(zombie, 
+                Phaser.Physics.ARCADE);
             zombie.body.setSize(50, 40, 0, 110);
             zombie.rate = -20;
+
+            zombie.tween = null;
+            // TODO Add the knife combat thing
+            //tween.onComplete.addOnce(tween2, this);
         });
 
-        /*
-        Zombies :: 2 Balloons
-        */
+
+            /*
+            TWO BALLOONS 
+            */
         this.twoBalloons = game.add.group();
         this.twoBalloons.enableBody = true;
         this.twoBalloons.createMultiple(500, 'zombieSpritesheet', 2);
@@ -473,11 +515,13 @@ var mainState = {
             // Zombies body only
             zombie.body.setSize(50, 40, 0, 110);
             zombie.rate = -40;
+
+            zombie.tween = null;
         });
 
-        /*
-        Zombies :: 3 Balloons
-        */
+            /*
+            THREE BALLOONS
+            */
         this.threeBalloons = game.add.group();
         this.threeBalloons.enableBody = true;
         this.threeBalloons.createMultiple(500, 'zombieSpritesheet', 3);
@@ -485,11 +529,14 @@ var mainState = {
             // Zombies body only
             zombie.body.setSize(50, 40, 0, 110);
             zombie.rate = -60;
+
+            zombie.tween = null;
         });
 
 
         /*
-        Balloons and Zombies Without Heads
+        BALLOONS AND ZOMBIES 
+        WITHOUT HEADS
         */
         this.oneAlone = game.add.group();
         this.oneAlone.enableBody = true;
@@ -645,75 +692,37 @@ var mainState = {
             Switching Weapon Layout Graphics
             */
             // Shotgun Done reloading
-        if (this.container.shotgun.reloading == true)
+        if (this.container.shotgun.reloading == true &&
+            this.game.time.now - this.container.shotgun.cooldown > 
+                this.container.shotgun.reloadTime)
         {
-            // Finished Reloading
-            if (this.game.time.now - this.container.shotgun.cooldown > 
-            this.container.shotgun.reloadTime)
-            {
-                this.container.shotgun.reloading = false;
-                this.reloadGauge.clear();
+            this.container.shotgun.reloading = false;
 
-                // Player using Shotgun, but it was reloading
-                if (this.player.weapon == 'Shotgun')
-                {
-                    this.shotgunGUI.frame = SELECTED;
-                }
-                // Player using Handgun, but show Shotgun is ready
-                else
-                {
-                    this.shotgunGUI.frame = DEFAULT;
-                }
+            // Player using Shotgun, but it was reloading
+            if (this.player.weapon == 'Shotgun')
+            {
+                this.shotgunGUI.frame = SELECTED;
             }
-            // Not Finished Reloading -- display
-            else 
+            // Player using Handgun, but show Shotgun is ready
+            else
             {
-                var timeElapsed = this.game.time.now - this.container.shotgun.cooldown; 
-                var totalTime = this.container.shotgun.reloadTime;
-                this.reloadGauge.clear();
-                var x = (timeElapsed / totalTime) * 100;
-                var colour = this.rgbToHex((x > 50 ? 1-2*(x-50)/100.0 : 1.0) * 255, (x > 50 ? 1.0 : 2*x/100.0) * 255, 0);
-
-                this.reloadGauge.beginFill(colour);
-                this.reloadGauge.lineStyle(5, colour, 1);
-                this.reloadGauge.moveTo(0,-5);
-                this.reloadGauge.lineTo(this.handgunGUI.width + this.shotgunGUI.width, -5);
-                this.reloadGauge.lineStyle(1, colour, 1);
+                this.shotgunGUI.frame = DEFAULT;
             }
         }
 
-        if (this.container.handgun.reloading == true)
-        {
-            // Finished reloading
-            if (this.game.time.now - this.container.handgun.cooldown >
+        if (this.container.handgun.reloading == true &&
+            this.game.time.now - this.container.handgun.cooldown >
             this.container.handgun.reloadTime)
-            {
-                this.container.handgun.reloading = false;
-                this.reloadGauge.clear();
+        {
+            this.container.handgun.reloading = false;
 
-                if (this.player.weapon == 'Handgun')
-                {
-                    this.handgunGUI.frame = SELECTED;
-                }
-                else
-                {
-                    this.handgunGUI.frame = DEFAULT;
-                }
+            if (this.player.weapon == 'Handgun')
+            {
+                this.handgunGUI.frame = SELECTED;
             }
             else
             {
-                // Not Finished Reloading -- display
-                var timeElapsed = this.game.time.now - this.container.handgun.cooldown; 
-                var totalTime = this.container.handgun.reloadTime;
-                this.reloadGauge.clear();
-                var x = (timeElapsed / totalTime) * 100;
-                var colour = this.rgbToHex((x > 50 ? 1-2*(x-50)/100.0 : 1.0) * 255, (x > 50 ? 1.0 : 2*x/100.0) * 255, 0);
-
-                this.reloadGauge.beginFill(colour);
-                this.reloadGauge.lineStyle(5, colour, 1);
-                this.reloadGauge.moveTo(0,-5);
-                this.reloadGauge.lineTo(this.handgunGUI.width + this.shotgunGUI.width, -5);
-                this.reloadGauge.lineStyle(1, colour, 1);
+                this.handgunGUI.frame = DEFAULT;
             }
         }
 
@@ -804,14 +813,23 @@ var mainState = {
                     zombie.body.velocity.x = 20;
                 else
                     zombie.body.velocity.x = -20;
+
+                zombie.play('walk', 20, true);
             }, null, this);
          this.game.physics.arcade.collide(this.cloudPlatform, this.zom,
             function(cloud, zombie){
-                // TODO Add Zombie Walking animation
+                // Zombie On LeftSide -- Walk Right 
                 if (zombie.body.x < this.container.player.body.x)
+                {
                     zombie.body.velocity.x = 20;
+                    zombie.animations.play('walkRight');
+                }
+                // Zombie on RightSide -- Walk Left
                 else
+                {
                     zombie.body.velocity.x = -20;
+                    zombie.animations.play('walkLeft');
+                }
             }, null, this);
 
         /* TEST AREA */
@@ -1046,19 +1064,66 @@ var mainState = {
         // HACKISH :: Solves undefined reference
         if (_zombie)
         {
+            // Remove Tween If Exists
+            if (_zombie.tween)
+            {
+                _zombie.tween.stop();
+                _zombie.tween = null;
+            }
+
             _zombie.alive = true;
             _zombie.exists = true;
             _zombie.frame = zombieType;
 
             _zombie.reset(x, y);
 
-            game.physics.arcade.moveToXY(
-                _zombie, 
-                this.container.player.x, 
-                this.container.player.y, 
-                _zombie.rate // speed, 
-                ,10000 // maxTimeToFinish(ms) 
-            );
+            // Random Movement
+            var R = Math.floor(Math.random()*(100-1+1)-1);
+            if (R <= 10)
+            {
+                game.physics.arcade.moveToXY(
+                    _zombie, 
+                    this.container.player.body.x, 
+                    this.container.player.body.y, 
+                    _zombie.rate // speed, 
+                    ,10000 // maxTimeToFinish(ms) 
+                );
+            }
+            else
+            {
+                _zombie.body.x = x;
+                _zombie.body.y = y;
+                _zombie.body.moves = false;
+                _zombie.tween = this.game.add.tween(_zombie)
+                .to( { x: 431,
+                       y: 110 },
+                     10000, 
+                     //Phaser.Easing.Sinusoidal.In,
+                     //Phaser.Easing.Sinusoidal.Out,
+                     Phaser.Easing.Sinusoidal.InOut,
+                     //Phaser.Easing.Quadratic.Out,
+                     true,
+                     0,
+                     0,
+                     false );
+                // Remove when finished
+                //  Hopefully prevents the random spawn issue
+                _zombie.tween.onComplete.add(function() {
+                    this.removeTween(_zombie);
+                }, this);
+            }
+
+
+            /*
+           );
+            */
+            /*
+            game.physics.arcade.moveToObject(
+                _zombie,
+                this.container.player,
+                _zombie.rate,
+                );
+            */
 
             _zombie.checkWorldBounds = true;
             _zombie.outOfBoundsKill = true;
@@ -1376,15 +1441,21 @@ var mainState = {
     },
 
     // Helper method
-    rgbToHex: function (r, g, b) 
+    removeTween: function (zombie) 
     {
-        return "0x" + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
+        console.log('removeTween called');
+        zombie.tween.stop();
+        zombie.tween = null;
+        zombie.body.moves = true;
     },
 
     render: function()
     {
-       game.debug.text('cloudPat x '+this.cloudPlatform.x, 100, 200);
-       game.debug.text('cloud x '+ this.cloud.x, 100, 100);
+       game.debug.text('player x '+this.container.player.x +
+                       ' player y '+this.container.player.y, 
+                       100, 200);
+
+       /*
        this.oneBalloon.forEachAlive(function(zombie) {
            game.debug.body(zombie);
        });
@@ -1394,6 +1465,9 @@ var mainState = {
        this.threeBalloons.forEachAlive(function(zombie) {
            game.debug.body(zombie);
        });
+        */
+
+       //game.debug.body(this.cloudPlatform);
     }
 };
 
