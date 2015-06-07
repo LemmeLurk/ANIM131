@@ -59,6 +59,7 @@ var downY;
 var straightX;
 var straightY;
 
+// Weapon Spritesheet Constants
 var DEFAULT = 0;
 var SELECTED = 1;
 var RELOAD = 2;
@@ -69,7 +70,8 @@ var windowHeight = $(window).height();
 
 // Initialize Phaser, and create a 400x490px game
 //var game = new Phaser.Game(400, 490, Phaser.AUTO, 'gameDiv');
-var game = new Phaser.Game(windowWidth, windowHeight, Phaser.AUTO, 'gameDiv');
+//var game = new Phaser.Game(windowWidth, windowHeight, Phaser.AUTO, 'gameDiv');
+var game = new Phaser.Game(windowWidth, windowHeight, Phaser.CANVAS, 'gameDiv');
 
 // Create our 'main' state that will contain the game
 var mainState = {
@@ -240,17 +242,17 @@ var mainState = {
             Cloud Platform :: Used for Zombies to Walk on
             */
         this.cloudPlatform = this.game.add.sprite(
-            this.game.world.centerX - (cloudWidth/2), 234);
+            this.game.world.centerX - (cloudWidth/2) - 10, 234);
         this.game.physics.arcade.enable(this.cloudPlatform,
             Phaser.Physics.ARCADE);
+
+        this.cloudPlatform.body.setSize(cloudWidth - 10, 20);
+
         this.cloudPlatform.body.immovable = true;
         this.cloudPlatform.moves = false;
-        //this.cloudPlatform.scale.x *= 1500;
-        //this.cloudPlatform.scale.y *= 20;
-        this.cloudPlatform.body.width = cloudWidth - 30;
+
         this.cloudPlatform.collideWorldBounds = true;
         this.cloudPlatform.allowGravity = false;
-        //this.cloudPlatform.scale.x = 718;
 
 
         /*TEST AREA*/
@@ -301,9 +303,9 @@ var mainState = {
 
         */
 
-        // 150 is the LEFT EDGE of Cloud
+        // 102 is the LEFT EDGE of Cloud
         // 840 is the RIGHT EDGE of Cloud
-        this.zom = game.add.sprite(150, aboveTheCloud, 
+        this.zom = game.add.sprite(102, aboveTheCloud, 
             'zombieSpritesheet', 0);
         this.zom.enableBody = true;
         this.game.physics.arcade.enable(this.zom, 
@@ -432,6 +434,7 @@ var mainState = {
         this.container.handgun.roundsLeft;
 
 
+
         /*
         Zombies :: No Balloons
         */
@@ -450,6 +453,8 @@ var mainState = {
         this.oneBalloon.enableBody = true;
         this.oneBalloon.createMultiple(500, 'zombieSpritesheet', 1);
         this.oneBalloon.forEach(function(zombie){
+            // Zombies body only
+            zombie.body.setSize(50, 40, 0, 110);
             zombie.rate = -20;
         });
 
@@ -460,6 +465,8 @@ var mainState = {
         this.twoBalloons.enableBody = true;
         this.twoBalloons.createMultiple(500, 'zombieSpritesheet', 2);
         this.twoBalloons.forEach(function(zombie){
+            // Zombies body only
+            zombie.body.setSize(50, 40, 0, 110);
             zombie.rate = -40;
         });
 
@@ -470,6 +477,8 @@ var mainState = {
         this.threeBalloons.enableBody = true;
         this.threeBalloons.createMultiple(500, 'zombieSpritesheet', 3);
         this.threeBalloons.forEach(function(zombie){
+            // Zombies body only
+            zombie.body.setSize(50, 40, 0, 110);
             zombie.rate = -60;
         });
 
@@ -673,8 +682,10 @@ var mainState = {
             /*
             ZOMBIE vs PLAYER
             */
+            // Eventually Give the player a few seconds to kill zombies by
+            // Using a timer
         if (this.game.physics.arcade.overlap(this.container.player, this.zombie, 
-            this.restartGame, this.confirmDeath, this))
+            this.restartGame, null, this))
             alert('this.container + this.zombie');
         if( this.game.physics.arcade.overlap(this.container.player, this.oneBalloon, 
             this.restartGame, this.confirmDeath, this))
@@ -727,10 +738,22 @@ var mainState = {
         /* TEST AREA */
         /* TEST AREA */
         this.game.physics.arcade.overlap(this.zom, this.bullets,
-            function(zombie, bullet){
+            function(zombie, bullet) {
                 zombie.body.gravity.y = 1000;
             }, null, this);
 
+        /*
+        ZOMBIE vs BULLET
+        */
+        this.game.physics.arcade.overlap(this.zombie, this.bullets,
+            function(zombie, bullet){
+                // TODO Play Zombie Death animation
+                zombie.kill();
+            }, null, this);
+
+        /*
+        Zombie lands on cloud
+        */
         this.game.physics.arcade.collide(this.cloudPlatform, this.zombie,
             function(cloud, zombie){
                 // TODO Add Zombie Walking animation
@@ -739,6 +762,15 @@ var mainState = {
                 else
                     zombie.body.velocity.x = -20;
             }, null, this);
+         this.game.physics.arcade.collide(this.cloudPlatform, this.zom,
+            function(cloud, zombie){
+                // TODO Add Zombie Walking animation
+                if (zombie.body.x < this.container.player.body.x)
+                    zombie.body.velocity.x = 20;
+                else
+                    zombie.body.velocity.x = -20;
+            }, null, this);
+
         /* TEST AREA */
         /* TEST AREA */
         /* TEST AREA */
@@ -840,20 +872,6 @@ var mainState = {
     },
 
 
-    confirmDeath: function(player, zombie)
-    {
-        zombie.enableBody = true;
-        /*
-        if (zombie.body.y + zombie.height == 210 - 50 ||
-            zombie.body.y + 64 == 210)
-*/
-        if (player.body.hitLeft() || player.body.hitRight)
-            return true;
-        else
-            return false;
-    },
-
-
     zombieHandler: function(zombie, cloud)
     {
         zombie.body.velocity.x = -200;
@@ -868,6 +886,7 @@ var mainState = {
         var Zombie_Start = zombie.body.bottom - 23;
         var Zombie_End = Zombie_Start - 11;
 
+        // Shooting the Balloon
         if (bullet.body.y <= Balloon_Start && bullet.body.y >= Balloon_End)
         {
             killCounter++;
@@ -878,7 +897,9 @@ var mainState = {
             bullet.kill();
             this.addOneZombie(zombie.x, zombie.y, 0);
         }
-        else if (bullet.body.y <= Zombie_Start && bullet.body.y >= Zombie_End )
+        // Shooting the Head
+        else if (bullet.body.y <= Zombie_Start && bullet.body.y >= Zombie_End  &&
+            zombie.body.x - bullet.body.x <= 10)
         {
             // This is a confirmed kill
             killCounter++;
@@ -1315,6 +1336,15 @@ var mainState = {
     {
        game.debug.text('cloudPat x '+this.cloudPlatform.x, 100, 200);
        game.debug.text('cloud x '+ this.cloud.x, 100, 100);
+       this.oneBalloon.forEachAlive(function(zombie) {
+           game.debug.body(zombie);
+       });
+       this.twoBalloons.forEachAlive(function(zombie) {
+        game.debug.body(zombie);
+       });
+       this.threeBalloons.forEachAlive(function(zombie) {
+           game.debug.body(zombie);
+       });
     }
 };
 
