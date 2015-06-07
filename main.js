@@ -156,8 +156,8 @@ var mainState = {
         /*
         Timers
         */
-        this.timer = game.time.events.loop(rateOfSpawn, 
-            this.addZombieHorde, this);
+        //this.timer = game.time.events.loop(rateOfSpawn, 
+        //    this.addZombieHorde, this);
 
 
         this.reloadTimer = 
@@ -224,6 +224,11 @@ var mainState = {
         this.shotgunGUI = this.game.add.sprite(
             this.handgunGUI.x+50, this.game.height - 70, "shotgunGUI", DEFAULT);
 
+        
+        /*
+        Reload Gauge
+        */
+        this.reloadGauge = game.add.graphics(300,300);
 
         /*
         Cloud Object
@@ -640,37 +645,75 @@ var mainState = {
             Switching Weapon Layout Graphics
             */
             // Shotgun Done reloading
-        if (this.container.shotgun.reloading == true &&
-            this.game.time.now - this.container.shotgun.cooldown > 
-            this.container.shotgun.reloadTime)
+        if (this.container.shotgun.reloading == true)
         {
-            this.container.shotgun.reloading = false;
+            // Finished Reloading
+            if (this.game.time.now - this.container.shotgun.cooldown > 
+            this.container.shotgun.reloadTime)
+            {
+                this.container.shotgun.reloading = false;
+                this.reloadGauge.clear();
 
-            // Player using Shotgun, but it was reloading
-            if (this.player.weapon == 'Shotgun')
-            {
-                this.shotgunGUI.frame = SELECTED;
+                // Player using Shotgun, but it was reloading
+                if (this.player.weapon == 'Shotgun')
+                {
+                    this.shotgunGUI.frame = SELECTED;
+                }
+                // Player using Handgun, but show Shotgun is ready
+                else
+                {
+                    this.shotgunGUI.frame = DEFAULT;
+                }
             }
-            // Player using Handgun, but show Shotgun is ready
-            else
+            // Not Finished Reloading -- display
+            else 
             {
-                this.shotgunGUI.frame = DEFAULT;
+                var timeElapsed = this.game.time.now - this.container.shotgun.cooldown; 
+                var totalTime = this.container.shotgun.reloadTime;
+                this.reloadGauge.clear();
+                var x = (timeElapsed / totalTime) * 100;
+                var colour = this.rgbToHex((x > 50 ? 1-2*(x-50)/100.0 : 1.0) * 255, (x > 50 ? 1.0 : 2*x/100.0) * 255, 0);
+
+                this.reloadGauge.beginFill(colour);
+                this.reloadGauge.lineStyle(5, colour, 1);
+                this.reloadGauge.moveTo(0,-5);
+                this.reloadGauge.lineTo(this.handgunGUI.width + this.shotgunGUI.width, -5);
+                this.reloadGauge.lineStyle(1, colour, 1);
             }
         }
 
-        if (this.container.handgun.reloading == true &&
-            this.game.time.now - this.container.handgun.cooldown >
-            this.container.handgun.reloadTime)
+        if (this.container.handgun.reloading == true)
         {
-            this.container.handgun.reloading = false;
-
-            if (this.player.weapon == 'Handgun')
+            // Finished reloading
+            if (this.game.time.now - this.container.handgun.cooldown >
+            this.container.handgun.reloadTime)
             {
-                this.handgunGUI.frame = SELECTED;
+                this.container.handgun.reloading = false;
+                this.reloadGauge.clear();
+
+                if (this.player.weapon == 'Handgun')
+                {
+                    this.handgunGUI.frame = SELECTED;
+                }
+                else
+                {
+                    this.handgunGUI.frame = DEFAULT;
+                }
             }
             else
             {
-                this.handgunGUI.frame = DEFAULT;
+                // Not Finished Reloading -- display
+                var timeElapsed = this.game.time.now - this.container.handgun.cooldown; 
+                var totalTime = this.container.handgun.reloadTime;
+                this.reloadGauge.clear();
+                var x = (timeElapsed / totalTime) * 100;
+                var colour = this.rgbToHex((x > 50 ? 1-2*(x-50)/100.0 : 1.0) * 255, (x > 50 ? 1.0 : 2*x/100.0) * 255, 0);
+
+                this.reloadGauge.beginFill(colour);
+                this.reloadGauge.lineStyle(5, colour, 1);
+                this.reloadGauge.moveTo(0,-5);
+                this.reloadGauge.lineTo(this.handgunGUI.width + this.shotgunGUI.width, -5);
+                this.reloadGauge.lineStyle(1, colour, 1);
             }
         }
 
@@ -1330,6 +1373,12 @@ var mainState = {
                     this.shotgunGUI.frame = NO_AMMO;                    
             }
         }
+    },
+
+    // Helper method
+    rgbToHex: function (r, g, b) 
+    {
+        return "0x" + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
     },
 
     render: function()
