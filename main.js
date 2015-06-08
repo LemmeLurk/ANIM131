@@ -107,6 +107,8 @@ var previousMenu = SOE;
 // Zombie Tween
 var tween;
 
+var oneHitbox;
+
 var music;
 
 var windowWidth = $(window).width();
@@ -473,8 +475,8 @@ var mainState = {
             /*
             SPAWN ZOMBIES
             */
-        //this.timer = game.time.events.loop(rateOfSpawn, 
-        //    this.addZombieHorde, this);
+        this.timer = game.time.events.loop(rateOfSpawn, 
+            this.addZombieHorde, this);
 
 
         this.reloadTimer = 
@@ -768,18 +770,23 @@ var mainState = {
         this.oneBalloon = game.add.group();
         this.oneBalloon.enableBody = true;
         this.oneBalloon.createMultiple(500, 'zombieSpritesheet', 1);
-        this.oneBalloon.forEach(function(zombie){
+
+        /*
+        GENERATE ZOMBIES
+        */
+        this.oneBalloon.forEach(function(zombie)
+        {
             // Zombies body only
             this.game.physics.arcade.enable(zombie, 
                 Phaser.Physics.ARCADE);
-            zombie.body.setSize(50, 40, 0, 110);
+            //zombie.body.setSize(50, 40, 0, 110);
             zombie.rate = -20;
+            zombie.speed = 10000;
 
             zombie.tween = null;
             // TODO Add the knife combat thing
             //tween.onComplete.addOnce(tween2, this);
         });
-
 
             /*
             TWO BALLOONS 
@@ -789,8 +796,9 @@ var mainState = {
         this.twoBalloons.createMultiple(500, 'zombieSpritesheet', 2);
         this.twoBalloons.forEach(function(zombie){
             // Zombies body only
-            zombie.body.setSize(50, 40, 0, 110);
+            //zombie.body.setSize(50, 40, 0, 110);
             zombie.rate = -40;
+            zombie.speed = 5000;
 
             zombie.tween = null;
         });
@@ -803,8 +811,9 @@ var mainState = {
         this.threeBalloons.createMultiple(500, 'zombieSpritesheet', 3);
         this.threeBalloons.forEach(function(zombie){
             // Zombies body only
-            zombie.body.setSize(50, 40, 0, 110);
+            //zombie.body.setSize(50, 40, 0, 110);
             zombie.rate = -60;
+            zombie.speed = 2500;
 
             zombie.tween = null;
         });
@@ -1106,27 +1115,17 @@ var mainState = {
         */
         this.game.physics.arcade.collide(this.cloudPlatform, this.zombie,
             function(cloud, zombie){
-                // TODO Add Zombie Walking animation
-                if (zombie.body.x < this.container.player.body.x)
-                    zombie.body.velocity.x = 20;
-                else
-                    zombie.body.velocity.x = -20;
-
-                zombie.play('walk', 20, true);
-            }, null, this);
-         this.game.physics.arcade.collide(this.cloudPlatform, this.zom,
-            function(cloud, zombie){
-                // Zombie On LeftSide -- Walk Right 
+                // Zombie on the Left | WALK RIGHT 
                 if (zombie.body.x < this.container.player.body.x)
                 {
                     zombie.body.velocity.x = 20;
-                    zombie.animations.play('walkRight');
+                    zombie.play('walkRight', 6, true);
                 }
-                // Zombie on RightSide -- Walk Left
+                // Zombie on the Right | WALK LEFT
                 else
                 {
                     zombie.body.velocity.x = -20;
-                    zombie.animations.play('walkLeft');
+                    zombie.play('walkLeft', 6, true);
                 }
             }, null, this);
     },
@@ -1172,9 +1171,23 @@ var mainState = {
             // Modify the Gauge to reflect current stats
             this.WaveGauge.width--;
 
+            // Because there are zombies floating through space
+            if (zombie.tween)
+            {
+                zombie.tween.stop();
+                zombie.tween = null;
+                zombie.body.moves = true;
+            }
+
             zombie.kill();
             bullet.kill();
-            this.addOneZombie(zombie.x, zombie.y, 0);
+
+            var _z = this.zombie.getFirstDead();
+            if (_z)
+            {
+                _z.reset(zombie.x, zombie.y);
+                _z.body.gravity.y = 1000;
+            }
         }
         // Shooting the Head
         else if (bullet.body.y <= Zombie_Start && bullet.body.y >= Zombie_End  &&
@@ -1201,7 +1214,7 @@ var mainState = {
 
         var Zombie_Start = zombie.body.bottom // should be the very bottom of the sprite... might need
                                 // to double check that is so
-        var Zombie_End = Zombie_Start - 50 // because zombie's sprite is 50px
+        var Zombie_End = Zombie_Start - 40 // because zombie's sprite is 50px
 
         if (BulletY <= Balloon_Start && BulletY >= Balloon_End)
         {
@@ -1232,7 +1245,7 @@ var mainState = {
 
         var Zombie_Start = zombie.body.bottom // should be the very bottom of the sprite... might need
                                 // to double check that is so
-        var Zombie_End = Zombie_Start - 50 // because zombie's sprite is 50px
+        var Zombie_End = Zombie_Start - 40 // because zombie's sprite is 50px
 
         if (BulletY <= Balloon_Start && BulletY >= Balloon_End)
         {
@@ -1264,6 +1277,7 @@ var mainState = {
         {
             case 0:
                 _zombie = this.zombie.getFirstDead();
+                _zombie.body.moves = true;
             break;
 
             case 1:
@@ -1319,13 +1333,15 @@ var mainState = {
                 _zombie.body.y = y;
                 _zombie.body.moves = false;
                 _zombie.tween = this.game.add.tween(_zombie)
-                .to( { x: 431,
-                       y: 110 },
+                .to( { x: this.container.player.body.x,
+                       y: 90  },
                      10000, 
                      //Phaser.Easing.Sinusoidal.In,
                      //Phaser.Easing.Sinusoidal.Out,
-                     Phaser.Easing.Sinusoidal.InOut,
+                     //Phaser.Easing.Sinusoidal.InOut,
                      //Phaser.Easing.Quadratic.Out,
+                     //Phaser.Easing.Quintic.In,
+                     Phaser.Easing.Linear.In,
                      true,
                      0,
                      0,
@@ -1693,6 +1709,33 @@ var mainState = {
         zombie.tween.stop();
         zombie.tween = null;
         zombie.body.moves = true;
+    },
+
+
+    confirmDeath: function (player, zombie)
+    {
+        // Zombie touching from Below
+        if (zombie.body.y >= player.body.bottom)
+        {
+            console.log('zombie.body.bottom - 110: '+
+                (zombie.body.bottom - 100).toString()); 
+            // Bottom of the sprite (Y position) 
+            // Subtract the Y position of player
+            // a difference of 40 which is size of zombie's body
+            /* zombie.body.bottom - 40 == zombie's body */
+            if (zombie.body.bottom - 40 == 108 )
+                return true;
+            else
+                return false;
+        }
+        // Zombie touching from Above
+        else if (zombie.body.bottom <= player.body.y)
+        {
+            if (zombie.body.bottom - 40 == 108)
+            return true;
+        }
+        else
+            return false;
     },
 
     render: function()
