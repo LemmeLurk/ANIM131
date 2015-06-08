@@ -99,9 +99,14 @@ var CONTROLS = 8;
 var gameStarted = false;
 var easyMode = true;
 var soundOn = true;
+var inControl = false;
+
+var previousMenu = SOE;
 
 // Zombie Tween
 var tween;
+
+var music;
 
 var windowWidth = $(window).width();
 var windowHeight = $(window).height();
@@ -246,11 +251,192 @@ var mainState = {
                         this.menu.frame = RFH;
                     }
                 }
-                
+
                 this.menu.visible = true;
                 this.menu.bringToTop();
             }
         },this);
+
+
+        // Hopefully this works
+        this.game.input.onDown.add(pauseHandler, this);
+
+        function pauseHandler(event)
+        {
+            if (this.game.paused)
+            {
+                // Exit Control Menu
+                if (inControl)
+                {
+                    inControl = false;
+
+                    /*
+                    Within Bounds
+                        Player wants to go back Menu
+                    */
+                    if (event.x >= 336 && event.x <= 747 && 
+                        event.y >= 119 && event.y <= 562)
+                    {
+                        this.menu.frame = previousMenu; 
+                    }                
+                    /*
+                    Out of Bounds
+                        Player wants to Exit Menu
+                    */                        
+                    else
+                    {
+                        this.menu.visible = false;
+                        this.game.paused = false;
+                    }
+               }
+                /*
+                Within Menu Bounds
+                */
+                else if (event.x >= 336 && event.x <= 747 && 
+                        event.y >= 119 && event.y <= 562)
+                {
+                    switch (this.menu.frame)
+                    {
+                        // Restart | Sound: On | Mode: Easy
+                        case ROE:
+                            previousMenu = ROE;
+                            // Restart Selected
+                            if(event.y <= 218)
+                            {
+                                // Hide Menu
+                                this.menu.visible = false;
+                                this.menu.frame = ROE;
+                                this.restartGame();
+                                this.game.paused = false;
+                            }
+                            // Controls Selected
+                            else if (event.y <= 330)
+                            {
+                                inControl = true;
+                                this.menu.frame = CONTROLS;
+                            }
+                            // Sound Selected
+                            else if (event.y <= 447)
+                            {
+                                music.stop(); 
+                                this.menu.frame = RFE;
+                            }
+                            // Difficulty Selected
+                            else if (event.y <= 562)
+                            {
+                                this.menu.frame = ROH;
+                            }
+                        break;
+
+                        // Restart | Sound: On | Mode: Hard 
+                        case ROH:
+                            previousMenu = ROH;
+                            // Restart Selected
+                            if(event.y <= 218)
+                            {
+                                // Hide Menu
+                                this.menu.visible = false;
+                                this.menu.frame = ROH;
+                                this.restartGame();
+                                this.game.paused = false;
+                            }
+                            // Controls Selected
+                            else if (event.y <= 330)
+                            {
+                                inControl = true;
+                                this.menu.frame = CONTROLS;
+                            }
+                            // Sound Selected
+                            else if (event.y <= 447)
+                            {
+                                music.stop(); 
+                                this.menu.frame = RFH;
+                            }
+                            // Difficulty Selected
+                            else if (event.y <= 562)
+                            {
+                                this.menu.frame = ROE;
+                            }
+                        break;
+
+                        // Restart | Sound: Off | Mode: Easy
+                        case RFE:
+                            previousMenu = RFE;
+                            // Restart Selected
+                            if(event.y <= 218)
+                            {
+                                // Hide Menu
+                                this.menu.visible = false;
+                                this.menu.frame = RFE;
+                                this.restartGame();
+                                this.game.paused = false;
+                            }
+                            // Controls Selected
+                            else if (event.y <= 330)
+                            {
+                                inControl = true;
+                                this.menu.frame = CONTROLS;
+                            }
+                            // Sound Selected
+                            else if (event.y <= 447)
+                            {
+                                music.play(); 
+                                this.menu.frame = ROE;
+                            }
+                            // Difficulty Selected
+                            else if (event.y <= 562)
+                            {
+                                this.menu.frame = RFH;
+                            }
+                        break;
+
+                        // Restart | Sound: Off | Mode: Hard
+                        case RFH:
+                            previousMenu = RFH;
+
+                            // Restart Selected
+                            if(event.y <= 218)
+                            {
+                                // Hide Menu
+                                this.menu.visible = false;
+                                this.menu.frame = RFH;
+                                this.restartGame();
+                                this.game.paused = false;
+                            }
+                            // Controls Selected
+                            else if (event.y <= 330)
+                            {
+                                inControl = true;
+                                this.menu.frame = CONTROLS;
+                            }
+                            // Sound Selected
+                            else if (event.y <= 447)
+                            {
+                                music.play(); 
+                                this.menu.frame = ROH;
+                            }
+                            // Difficulty Selected
+                            else if (event.y <= 562)
+                            {
+                                this.menu.frame = RFE;
+                            }
+                        break;
+
+                        default:
+                            console.log('default summoned!');
+                            console.log('this.menu.frame: ' + this.menu.frame);
+                            this.menu.frame = previousMenu;
+                        break;
+                    }
+                }
+                else
+                {
+                    console.log('x: ' + event.x + ' y: ' + event.y);
+                    this.menu.visible = false;
+                    this.game.paused = false;
+                }
+            }
+        }
 
         /*
         TIMERS
