@@ -1,3 +1,11 @@
+var windowWidth = $(window).width();
+var windowHeight = $(window).height();
+
+// Initialize Phaser, and create a 400x490px game
+//var game = new Phaser.Game(400, 490, Phaser.AUTO, 'gameDiv');
+//var game = new Phaser.Game(windowWidth, windowHeight, Phaser.AUTO, 'gameDiv');
+var game = new Phaser.Game(windowWidth, windowHeight, Phaser.CANVAS, 'gameDiv');
+
 // Create our 'main' state that will contain the game
 var easyState = {
 
@@ -1606,4 +1614,25 @@ var easyState = {
         else
             return false;
     }
+};
+
+function resizeGame()
+{
+    var height = $(window).height();
+    var width = $(window).width();
+
+    game.width = width;
+    game.height = height;
+    //game.stage.bounds.width = width;
+    //game.stage.bounds.height = height;
+
+    if (game.renderType === Phaser.WEBGL)
+    {
+        game.renderer.resize(width, height);
+    }
+}
+
+$(window).resize(function() { window.resizeGame(); });
+window.onkeydown = function(e) { 
+  return !(e.keyCode == 32);
 };

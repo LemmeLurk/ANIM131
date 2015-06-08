@@ -1,4 +1,13 @@
 /// <reference path="~/phaser.js" />
+var _easy;
+var _hard;
+$.getScript("easy.js", function(){
+    _easy = easyState;
+});
+
+$.getScript("hard.js", function(){
+    _hard = hardState;
+});
 
 
 // Global helper members
@@ -197,10 +206,12 @@ var mainState = {
                         if(event.y <= 218)
                         {
                             // Hide Menu
+                            this.game.paused = false;
                             this.menu.visible = false;
                             this.menu.frame = ROE;
-                            this.restartGame();
-                            this.game.paused = false;
+
+                            easyMode = true;
+                            game.state.start('easy');
                         }
                         // Controls Selected
                         else if (event.y <= 330)
@@ -220,6 +231,9 @@ var mainState = {
                             easyMode = false;
                             previousMenu =
                             this.menu.frame = ROH;
+                            this.menu.visible = false;
+
+                            game.state.start('hard');
                         }
                     break;
 
@@ -230,10 +244,12 @@ var mainState = {
                         if(event.y <= 218)
                         {
                             // Hide Menu
+                            this.game.paused = false;
                             this.menu.visible = false;
                             this.menu.frame = ROH;
-                            this.restartGame();
-                            this.game.paused = false;
+
+                            easyMode = false;
+                            game.state.start('hard');
                         }
                         // Controls Selected
                         else if (event.y <= 330)
@@ -253,6 +269,9 @@ var mainState = {
                             easyMode = true;
                             previousMenu =
                             this.menu.frame = ROE;
+                            this.menu.visible = false;
+
+                            game.state.start('easy');
                         }
                     break;
 
@@ -263,10 +282,12 @@ var mainState = {
                         if(event.y <= 218)
                         {
                             // Hide Menu
+                            this.game.paused = false;
                             this.menu.visible = false;
                             this.menu.frame = RFE;
-                            this.restartGame();
-                            this.game.paused = false;
+
+                            easyMode = true;
+                            game.state.start('easy');
                         }
                         // Controls Selected
                         else if (event.y <= 330)
@@ -286,6 +307,9 @@ var mainState = {
                             easyMode = false;
                             previousMenu =
                             this.menu.frame = RFH;
+                            this.menu.visible = false;
+
+                            game.state.start('hard');
                         }
                     break;
 
@@ -297,10 +321,12 @@ var mainState = {
                         if(event.y <= 218)
                         {
                             // Hide Menu
+                            this.game.paused = false;
                             this.menu.visible = false;
                             this.menu.frame = RFH;
-                            this.restartGame();
-                            this.game.paused = false;
+
+                            easyMode = false;
+                            game.state.start('hard');
                         }
                         // Controls Selected
                         else if (event.y <= 330)
@@ -320,6 +346,8 @@ var mainState = {
                             easyMode = true;
                             previousMenu = 
                             this.menu.frame = RFE;
+                            this.menu.visible = false;
+                            game.state.start('easy');
                         }
                     break;
 
@@ -367,9 +395,9 @@ window.onkeydown = function(e) {
 };
 // Add and start the 'main' state to start the game
 game.state.add('main', mainState);
-//game.state.add('small', mainState);
-//game.state.add('medium', mediumState);
-//game.state.add('large', largeState);
+game.state.add('easy', _easy);
+game.state.add('hard', _hard);
+
 game.state.start('main');
 
 //We use window.game because we want it to be accessible from everywhere
