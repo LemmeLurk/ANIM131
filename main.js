@@ -115,8 +115,8 @@ var windowHeight = $(window).height();
 
 // Initialize Phaser, and create a 400x490px game
 //var game = new Phaser.Game(400, 490, Phaser.AUTO, 'gameDiv');
-var game = new Phaser.Game(windowWidth, windowHeight, Phaser.AUTO, 'gameDiv');
-//var game = new Phaser.Game(windowWidth, windowHeight, Phaser.CANVAS, 'gameDiv');
+//var game = new Phaser.Game(windowWidth, windowHeight, Phaser.AUTO, 'gameDiv');
+var game = new Phaser.Game(windowWidth, windowHeight, Phaser.CANVAS, 'gameDiv');
 
 // Create our 'main' state that will contain the game
 var mainState = {
@@ -399,6 +399,18 @@ game.state.add('menu', require('./states/menu.js'));
 game.state.add('boot', require('./states/boot.js'));
 game.state.start('boot');
 */
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -3677,8 +3689,7 @@ var hardState = {
         console.log('removeTween called');
         zombie.tween.stop();
         zombie.tween = null;
-        zombie.body.moves = true
-
+        zombie.body.moves = true;
     },
 
 
@@ -3694,20 +3705,9 @@ var hardState = {
 
 
 
-
-
-
-
-
-
-
-
-
-
-
 // Add and start the 'main' state to start the game
 game.state.add('main', mainState);
 game.state.add('easy', easyState);
 game.state.add('hard', hardState);
 
-game.state.start('hard');
+game.state.start('main');
