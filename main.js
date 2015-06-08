@@ -36,6 +36,26 @@ var zombieCounter = 100;
 
 var rateOfSpawn = 1500;
 
+
+/*
+Gradient Background Array
+*/
+var backgroundColor = 
+[
+    '#71c5cf',
+    '#66B1BA',
+    '#5A9EA6',
+    '#4F8A91',
+    '#44767C',
+    '#386268',
+    '#2D4F53',
+    '#223B3E',
+    '#172729',
+    '#0B1415'
+];
+var currentBackground = 0;
+
+
 var dx;
 var dy;
 
@@ -65,6 +85,21 @@ var SELECTED = 1;
 var RELOAD = 2;
 var NO_AMMO = 3;
 
+// Menu Constants
+var SOE = 0;
+var SOH = 1;
+var SFE = 2;
+var SFH = 3;
+var ROE = 4;
+var ROH = 5;
+var RFE = 6;
+var RFH = 7;
+var CONTROLS = 8;
+
+var gameStarted = false;
+var easyMode = true;
+var soundOn = true;
+
 // Zombie Tween
 var tween;
 
@@ -82,7 +117,8 @@ var mainState = {
     preload: function () 
     {
         // Change the background color of the game
-        game.stage.backgroundColor = '#71c5cf';
+        game.stage.backgroundColor = 
+            backgroundColor[currentBackground];
 
         // Load the image of Cloud
         game.load.image('cloud', 'assets/cloud.png');
@@ -146,7 +182,11 @@ var mainState = {
         game.load.spritesheet('shotgunGUI', 
             'assets/ShotgunGUI.png', 90, 50);
 
-
+        /*
+        MENU GUI
+        */
+        game.load.spritesheet('menu',
+            'assets/Menu.png', 918, 918);
     },
 
 
@@ -165,6 +205,52 @@ var mainState = {
         this.spacebar =
             game.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR);
 
+        /*
+        PAUSE MENU
+        */
+            /*
+            PAUSE KEY
+            */
+        this.pauseKey =
+            game.input.keyboard.addKey(27);
+
+        this.pauseKey.onDown.add(function () {
+            if(this.game.paused)
+            {
+                this.game.paused = false;
+                this.menu.visible = false;
+            }
+            else
+            {
+                this.game.paused = true;
+                
+                if (easyMode) 
+                {
+                    if (soundOn)
+                    {
+                        this.menu.frame = ROE;
+                    }
+                    else
+                    {
+                        this.menu.frame = RFE;
+                    }
+                }
+                else
+                {
+                    if (soundOn)
+                    {
+                        this.menu.frame = ROH;
+                    }
+                    else 
+                    {
+                        this.menu.frame = RFH;
+                    }
+                }
+                
+                this.menu.visible = true;
+                this.menu.bringToTop();
+            }
+        },this);
 
         /*
         TIMERS
@@ -172,8 +258,8 @@ var mainState = {
             /*
             SPAWN ZOMBIES
             */
-        this.timer = game.time.events.loop(rateOfSpawn, 
-            this.addZombieHorde, this);
+        //this.timer = game.time.events.loop(rateOfSpawn, 
+        //    this.addZombieHorde, this);
 
 
         this.reloadTimer = 
@@ -239,6 +325,25 @@ var mainState = {
             this.game.width - 140, this.game.height - 70, "handgunGUI", SELECTED);
         this.shotgunGUI = this.game.add.sprite(
             this.handgunGUI.x+50, this.game.height - 70, "shotgunGUI", DEFAULT);
+
+
+        /*
+        MenuGUI Object
+        */
+        var menuX = this.game.world.centerX - (918/2); // Menu: 918x918;
+        var menuY = this.game.world.centerY - (918/2);
+
+        this.menu = this.game.add.sprite(menuX, menuY, 'menu');
+
+        var scaleX = 0.5;
+        var scaleY = 0.5;
+
+        this.menu.scale.set(scaleX, scaleY);
+
+        this.menu.x = (this.game.world.centerX - (409/2));
+        this.menu.y = (this.game.world.centerY - (409/2));
+
+        this.menu.visible = false;
 
 
         /*
@@ -928,6 +1033,10 @@ var mainState = {
         _currentTypeWeights = typeWeights.first;
         _NumberWeightCount = 1;
         _currentNumberWeights = numberWeights.first;
+        currentBackground = 0;
+        this.game.stage.backgroundColor = 
+            backgroundColor[currentBackground];
+        gameStarted = true;
 
         game.state.start('main');
     },
@@ -1318,6 +1427,12 @@ var mainState = {
         }
 
         _NumberWeightCount++;
+
+        // Darken Background
+        currentBackground++;
+
+        this.game.stage.backgroundColor =
+            backgroundColor[currentBackground];
     },
 
 
@@ -1451,9 +1566,11 @@ var mainState = {
 
     render: function()
     {
-       game.debug.text('player x '+this.container.player.x +
-                       ' player y '+this.container.player.y, 
-                       100, 200);
+        game.debug.text('X: ' + dx + ' Y: ' + dy, 100, 200);
+
+       //game.debug.text('player x '+this.container.player.x +
+       //                ' player y '+this.container.player.y, 
+       //                100, 200);
 
        /*
        this.oneBalloon.forEachAlive(function(zombie) {
