@@ -103,6 +103,8 @@ var inControl = false;
 
 var previousMenu = SOE;
 
+var mute = false;
+
 // Zombie Tween
 var tween;
 
@@ -202,11 +204,15 @@ var mainState = {
                             if (easyMode)
                             {
                                 this.menu.frame = ROE;
+                                if (!soundOn)
+                                    mute = true;
                                 game.state.start('easy');
                             }
                             else
                             {
                                 this.menu.frame = ROH;
+                                if (!soundOn)
+                                    mute = true;
                                 game.state.start('hard');
                             }
                         }
@@ -243,11 +249,15 @@ var mainState = {
                             if (easyMode)
                             {
                                 this.menu.frame = ROE;
+                                if (!soundOn)
+                                    mute = true;
                                 game.state.start('easy');
                             }
                             else
                             {
                                 this.menu.frame = ROH;
+                                if (!soundOn)
+                                    mute = true;
                                 game.state.start('hard');
                             }
                         }
@@ -284,11 +294,15 @@ var mainState = {
                             if (easyMode)
                             {
                                 this.menu.frame = RFE;
+                                if (!soundOn)
+                                    mute = true;
                                 game.state.start('easy');
                             }
                             else
                             {
                                 this.menu.frame = RFH;
+                                if (!soundOn)
+                                    mute = true;
                                 game.state.start('hard');
                             }
                         }
@@ -326,11 +340,15 @@ var mainState = {
                             if (easyMode)
                             {
                                 this.menu.frame = RFE;
+                                if (!soundOn)
+                                    mute = true;
                                 game.state.start('easy');
                             }
                             else
                             {
                                 this.menu.frame = RFH;
+                                if (!soundOn)
+                                    mute = true;
                                 game.state.start('hard');
                             }
                         }
@@ -475,6 +493,11 @@ var easyState = {
         game.stage.backgroundColor = 
             backgroundColor[currentBackground];
 
+
+            game.load.audio(
+                'musicBox', 
+                ['audio/musicBox.mp3', 'audio/musicBox.ogg']);    
+
         // Load the image of Cloud
         game.load.image('cloud', 'assets/cloud.png');
 
@@ -573,6 +596,12 @@ var easyState = {
         rateOfSpawn = 3000;
 
         maxZombies = 150;
+
+        music = game.add.audio('musicBox');
+        music.loop = true;
+
+        if (soundOn)
+           music.play(); 
 
         /*
         Capture Keys
@@ -690,7 +719,7 @@ var easyState = {
                             else if (event.y <= 447)
                             {
                                 soundOn = false;
-                                music.stop(); 
+                                music.pause(); 
                                 this.menu.frame = RFE;
                             }
                             // Difficulty Selected
@@ -727,7 +756,10 @@ var easyState = {
                             else if (event.y <= 447)
                             {
                                 soundOn = true;
-                                music.stop(); 
+                                if (mute)
+                                    music.play();
+                                else
+                                    music.resume(); 
                                 this.menu.frame = RFH;
                             }
                             // Difficulty Selected
@@ -763,7 +795,11 @@ var easyState = {
                             // Sound Selected | ON
                             else if (event.y <= 447)
                             {
-                                music.play(); 
+                                soundOn = true;
+                                if (mute)
+                                    music.play();
+                                else
+                                    music.resume(); 
                                 this.menu.frame = ROE;
                             }
                             // Difficulty Selected | HARD
@@ -800,7 +836,10 @@ var easyState = {
                             else if (event.y <= 447)
                             {
                                 soundOn = true;
-                                music.play(); 
+                                if (mute)
+                                    music.play();
+                                else
+                                    music.resume(); 
                                 this.menu.frame = ROH;
                             }
                             // Difficulty Selected | EASY
@@ -1419,16 +1458,24 @@ var easyState = {
             */
         if (this.game.physics.arcade.overlap(this.container.player, this.zombie, 
             this.restartGame, null, this))
-            alert('this.container + this.zombie');
+            alert('What a terrible way to go -_- \n\n\n' +
+                'Zombies Destroyed: ' + killCounter + '\n' +
+                'Zombies Remaining: ' + maxZombies - killCounter);
         if( this.game.physics.arcade.overlap(this.container.player, this.oneBalloon, 
             this.restartGame, this.confirmDeath, this))
-            alert('this.container + this.oneBalloon');
+            alert('What a terrible way to go -_- \n\n\n' +
+                'Zombies Destroyed: ' + killCounter + '\n' +
+                'Zombies Remaining: ' + maxZombies - killCounter);
         if( this.game.physics.arcade.overlap(this.container.player, this.twoBalloons, 
             this.restartGame, this.confirmDeath, this))
-            alert('this.container + this.twoBalloons');
+            alert('What a terrible way to go -_- \n\n\n' +
+                'Zombies Destroyed: ' + killCounter + '\n' +
+                'Zombies Remaining: ' + maxZombies - killCounter);
         if( this.game.physics.arcade.overlap(this.container.player, this.threeBalloons, 
             this.restartGame, this.confirmDeath, this))
-            alert('this.container + this.threeBalloons');
+            alert('What a terrible way to go -_- \n\n\n' +
+                'Zombies Destroyed: ' + killCounter + '\n' +
+                'Zombies Remaining: ' + maxZombies - killCounter);
 
             /*
             ZOMBIE W/ BALLOON vs BULLET
@@ -2137,6 +2184,11 @@ var hardState = {
         game.stage.backgroundColor = 
             backgroundColor[currentBackground];
 
+            game.load.audio(
+                'musicBox',
+                ['audio/musicBox.mp3',
+                'audio/musicBox.ogg']);
+
         // Load the image of Cloud
         game.load.image('cloud', 'assets/cloud.png');
 
@@ -2237,6 +2289,12 @@ var hardState = {
         rateOfSpawn = 1900;
 
         maxZombies = 200;
+
+       music = game.add.audio('musicBox');
+
+        if (soundOn)
+           music.play(); 
+
 
         /*
         Capture Keys
@@ -2355,7 +2413,7 @@ var hardState = {
                             else if (event.y <= 447)
                             {
                                 soundOn = false;
-                                music.stop(); 
+                                music.pause(); 
                                 this.menu.frame = RFE;
                             }
                             // Difficulty Selected
@@ -2391,8 +2449,8 @@ var hardState = {
                             // Sound Selected | OFF
                             else if (event.y <= 447)
                             {
-                                soundOn = true;
-                                music.stop(); 
+                                soundOn = false;
+                                music.pause(); 
                                 this.menu.frame = RFH;
                             }
                             // Difficulty Selected
@@ -2427,7 +2485,11 @@ var hardState = {
                             // Sound Selected | ON
                             else if (event.y <= 447)
                             {
-                                music.play(); 
+                                soundOn = true;
+                                if (mute)
+                                    music.play();
+                                else
+                                    music.resume(); 
                                 this.menu.frame = ROE;
                             }
                             // Difficulty Selected | HARD
@@ -2465,7 +2527,10 @@ var hardState = {
                             else if (event.y <= 447)
                             {
                                 soundOn = true;
-                                music.play(); 
+                                if (mute)
+                                    music.play();
+                                else
+                                    music.resume(); 
                                 this.menu.frame = ROH;
                             }
                             // Difficulty Selected | EASY
