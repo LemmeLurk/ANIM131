@@ -33,6 +33,7 @@ var _TypeWeightCount = 1;
 
 var killCounter = 0;
 var zombieCounter = 100;
+var maxZombies = 100;
 
 var rateOfSpawn = 1500;
 
@@ -311,6 +312,7 @@ var mainState = {
                 else if (event.x >= 336 && event.x <= 747 && 
                         event.y >= 119 && event.y <= 562)
                 {
+                    console.log ('Menu: ' + this.menu.frame);
                     switch (this.menu.frame)
                     {
                         // Restart | Sound: On | Mode: Easy
@@ -331,15 +333,18 @@ var mainState = {
                                 inControl = true;
                                 this.menu.frame = CONTROLS;
                             }
-                            // Sound Selected
+                            // Sound Selected | OFF
                             else if (event.y <= 447)
                             {
+                                soundOn = false;
                                 music.stop(); 
                                 this.menu.frame = RFE;
                             }
                             // Difficulty Selected
                             else if (event.y <= 562)
                             {
+                                easyMode = false;
+                                previousMenu =
                                 this.menu.frame = ROH;
                             }
                         break;
@@ -362,15 +367,18 @@ var mainState = {
                                 inControl = true;
                                 this.menu.frame = CONTROLS;
                             }
-                            // Sound Selected
+                            // Sound Selected | OFF
                             else if (event.y <= 447)
                             {
+                                soundOn = true;
                                 music.stop(); 
                                 this.menu.frame = RFH;
                             }
                             // Difficulty Selected
                             else if (event.y <= 562)
                             {
+                                easyMode = true;
+                                previousMenu =
                                 this.menu.frame = ROE;
                             }
                         break;
@@ -393,15 +401,17 @@ var mainState = {
                                 inControl = true;
                                 this.menu.frame = CONTROLS;
                             }
-                            // Sound Selected
+                            // Sound Selected | ON
                             else if (event.y <= 447)
                             {
                                 music.play(); 
                                 this.menu.frame = ROE;
                             }
-                            // Difficulty Selected
+                            // Difficulty Selected | HARD
                             else if (event.y <= 562)
                             {
+                                easyMode = false;
+                                previousMenu =
                                 this.menu.frame = RFH;
                             }
                         break;
@@ -425,15 +435,18 @@ var mainState = {
                                 inControl = true;
                                 this.menu.frame = CONTROLS;
                             }
-                            // Sound Selected
+                            // Sound Selected | ON
                             else if (event.y <= 447)
                             {
+                                soundOn = true;
                                 music.play(); 
                                 this.menu.frame = ROH;
                             }
-                            // Difficulty Selected
+                            // Difficulty Selected | EASY
                             else if (event.y <= 562)
                             {
+                                easyMode = true;
+                                previousMenu = 
                                 this.menu.frame = RFE;
                             }
                         break;
@@ -604,76 +617,6 @@ var mainState = {
         this.cloudPlatform.collideWorldBounds = true;
         this.cloudPlatform.allowGravity = false;
 
-
-        /*TEST AREA*/
-        /*TEST AREA*/
-        /*TEST AREA*/
-
-        /*
-        this.upContainer = this.game.add.sprite(0, 0, null);
-
-        upX = cloudWidth/2 + 200;
-        upY = 210;
-
-        this.upContainer.up = 
-            this.game.add.sprite(upX, upY, 'top_up');
-        this.upContainer.up.anchor.setTo(0.5,0.5);
-        this.upContainer.up.enableBody = true;
-        this.game.physics.arcade.enable(this.upContainer.up);
-
-
-        feetX = upX - 10;
-        feetY = 205;
-
-        this.upContainer.feet = 
-            this.game.add.sprite(feetX, feetY, 'bottom');
-
-        downX = feetX;
-        downY = 220;
-
-        this.upContainer.down = 
-            this.game.add.sprite(downX, downY,
-                'handgunDown', 2);
-        //this.upContainer.down.anchor.setTo(0.5,1);
-        this.upContainer.down.anchor.setTo(0.5,0.5);
-        this.upContainer.down.enableBody = true;
-        this.game.physics.arcade.enable(this.upContainer.down);
-
-
-        straightX = upX+8;
-        straightY = 203.2222;
-
-        this.upContainer.straight = 
-            this.game.add.sprite(straightX, straightY,
-                'straight');
-        //this.upContainer.down.anchor.setTo(0.5,1);
-        this.upContainer.straight.anchor.setTo(0.5,0.5);
-        this.upContainer.straight.enableBody = true;
-        this.game.physics.arcade.enable(this.upContainer.straight);
-
-        */
-
-        // 102 is the LEFT EDGE of Cloud
-        // 840 is the RIGHT EDGE of Cloud
-        this.zom = game.add.sprite(this.game.world.centerX - (cloudWidth/2) - 14, aboveTheCloud + 30, 
-            'zombieWalking', 0);
-        this.zom.enableBody = true;
-        this.game.physics.arcade.enable(this.zom, 
-            Phaser.Physics.ARCADE);
-        this.zom.body.setSize(35, 66);
-        this.zom.animations.add('walkRight',
-            [0,1,2,3,4,5,6,7,8,9,10,11],
-            6, 
-            true);
-        this.zom.animations.add('walkLeft',
-            [12,13,14,15,16,17,18,19,20,21,22,23],
-            6, 
-            true);
-
-
-        /*TEST AREA*/
-        /*TEST AREA*/
-        /*TEST AREA*/
 
 
         /*
@@ -890,7 +833,7 @@ var mainState = {
 
     update: function () 
     {
-        if (killCounter === 100)
+        if (killCounter === maxZombies)
         {
             alert('Congrats... dem undead is dead');
             this.restartGame();
@@ -1094,9 +1037,9 @@ var mainState = {
         */
             /*
             ZOMBIE vs PLAYER
+                TODO Eventually Give the player a few seconds to kill zombies by
+                Using a timer
             */
-            // Eventually Give the player a few seconds to kill zombies by
-            // Using a timer
         if (this.game.physics.arcade.overlap(this.container.player, this.zombie, 
             this.restartGame, null, this))
             alert('this.container + this.zombie');
@@ -1147,13 +1090,6 @@ var mainState = {
             }, null, this); 
 
 
-        /* TEST AREA */
-        /* TEST AREA */
-        /* TEST AREA */
-        this.game.physics.arcade.overlap(this.zom, this.bullets,
-            function(zombie, bullet) {
-                zombie.body.gravity.y = 1000;
-            }, null, this);
 
         /*
         ZOMBIE vs BULLET
@@ -1165,7 +1101,8 @@ var mainState = {
             }, null, this);
 
         /*
-        Zombie lands on cloud
+        ZOMBIE vs CLOUD_PLATFORM
+            Zombie lands and cloud and plays walking animation
         */
         this.game.physics.arcade.collide(this.cloudPlatform, this.zombie,
             function(cloud, zombie){
@@ -1192,90 +1129,6 @@ var mainState = {
                     zombie.animations.play('walkLeft');
                 }
             }, null, this);
-
-        /* TEST AREA */
-        /* TEST AREA */
-        /* TEST AREA */
-
-
-
-                    /*
-        if (roundedDy <= 0)
-        {
-            // TOP 
-            if (roundedDy == -2)
-            {
-                this.upContainer.down.visible = false;
-                this.upContainer.straight.visible = false;
-                this.upContainer.up.visible = true;
-
-                this.upContainer.up.scale.x *= 1;
-                this.upContainer.up.scale.y *= -1;
-
-                this.upContainer.up.rotation = 
-                    Math.atan2(dy,dx);
-            }
-            // STRAIGHT 
-            else if (roundedDy == -1 || roundedDy == 0)
-            {
-                this.upContainer.down.visible = false;
-                this.upContainer.up.visible = false;
-                this.upContainer.straight.visible = true;
-
-                this.upContainer.straight.scale.x *= 1;
-                this.upContainer.straight.scale.y *= 1;
-
-                this.upContainer.straight.rotation = 
-                    Math.atan2(dy,dx);
-            }
-            // LEFT -- INVERT
-            else if (roundedDy == -3 || roundedDy == -4)
-            {
-                this.upContainer.down.visible = false;
-                this.upContainer.straight.visible = false;
-                //this.upContainer.up.visible = true;
-                this.upContainer.up.reset(
-                    straightX, straightY + 20);
-
-                this.upContainer.up.scale.x *= -1;
-                this.upContainer.up.scale.y *= 1;
-
-                this.upContainer.up.rotation = 
-                    Math.atan2(dy,dx);
-            }
-        } // End if < 0
-
-        else if (roundedDy >= 0)
-        {
-            // DOWN 
-            if (roundedDy == 1)
-            {
-                this.upContainer.up.visible = false;
-                this.upContainer.straight.visible = false;
-                this.upContainer.down.visible = true;
-
-                //this.upContainer.down.scale.y = 1;
-                //this.upContainer.down.scale.x = 1;
-
-                this.upContainer.down.rotation = 
-                    Math.atan2(dy,dx);
-            }
-            // DOWN -- INVERT 
-            else if (roundedDy == 2)
-            {
-                this.upContainer.up.visible = false;
-                this.upContainer.straight.visible = false;
-                this.upContainer.down.visible = true;
-
-                this.upContainer.down.scale.x *= -1;
-                this.upContainer.down.scale.y *= -1;
-
-                //this.upContainer.down.rotation = 
-                //    Math.atan2(dy,dx);
-                this.upContainer.down.rotation = 
-                    Math.atan2(dy,dx);
-            }
-        }*/
     },
 
 
