@@ -1714,26 +1714,9 @@ var mainState = {
 
     confirmDeath: function (player, zombie)
     {
-        // Zombie touching from Below
-        if (zombie.body.y >= player.body.bottom)
-        {
-            console.log('zombie.body.bottom - 110: '+
-                (zombie.body.bottom - 100).toString()); 
-            // Bottom of the sprite (Y position) 
-            // Subtract the Y position of player
-            // a difference of 40 which is size of zombie's body
-            /* zombie.body.bottom - 40 == zombie's body */
-            if (zombie.body.bottom - 40 == 108 )
-                return true;
-            else
-                return false;
-        }
-        // Zombie touching from Above
-        else if (zombie.body.bottom <= player.body.y)
-        {
-            if (zombie.body.bottom - 40 == 108)
+        if (zombie.body.bottom - 40 <= 210 &&
+        zombie.body.bottom - 40 >= 90)
             return true;
-        }
         else
             return false;
     },
