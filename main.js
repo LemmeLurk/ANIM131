@@ -198,10 +198,17 @@ var mainState = {
                             // Hide Menu
                             this.game.paused = false;
                             this.menu.visible = false;
-                            this.menu.frame = ROE;
 
-                            easyMode = true;
-                            game.state.start('easy');
+                            if (easyMode)
+                            {
+                                this.menu.frame = ROE;
+                                game.state.start('easy');
+                            }
+                            else
+                            {
+                                this.menu.frame = ROH;
+                                game.state.start('hard');
+                            }
                         }
                         // Controls Selected
                         else if (event.y <= 330)
@@ -220,10 +227,7 @@ var mainState = {
                         {
                             easyMode = false;
                             previousMenu =
-                            this.menu.frame = ROH;
-                            this.menu.visible = false;
-
-                            game.state.start('hard');
+                            this.menu.frame = SOH;
                         }
                     break;
 
@@ -236,10 +240,16 @@ var mainState = {
                             // Hide Menu
                             this.game.paused = false;
                             this.menu.visible = false;
-                            this.menu.frame = ROH;
-
-                            easyMode = false;
-                            game.state.start('hard');
+                            if (easyMode)
+                            {
+                                this.menu.frame = ROE;
+                                game.state.start('easy');
+                            }
+                            else
+                            {
+                                this.menu.frame = ROH;
+                                game.state.start('hard');
+                            }
                         }
                         // Controls Selected
                         else if (event.y <= 330)
@@ -258,10 +268,7 @@ var mainState = {
                         {
                             easyMode = true;
                             previousMenu =
-                            this.menu.frame = ROE;
-                            this.menu.visible = false;
-
-                            game.state.start('easy');
+                            this.menu.frame = SOE;
                         }
                     break;
 
@@ -274,10 +281,16 @@ var mainState = {
                             // Hide Menu
                             this.game.paused = false;
                             this.menu.visible = false;
-                            this.menu.frame = RFE;
-
-                            easyMode = true;
-                            game.state.start('easy');
+                            if (easyMode)
+                            {
+                                this.menu.frame = RFE;
+                                game.state.start('easy');
+                            }
+                            else
+                            {
+                                this.menu.frame = RFH;
+                                game.state.start('hard');
+                            }
                         }
                         // Controls Selected
                         else if (event.y <= 330)
@@ -296,10 +309,7 @@ var mainState = {
                         {
                             easyMode = false;
                             previousMenu =
-                            this.menu.frame = RFH;
-                            this.menu.visible = false;
-
-                            game.state.start('hard');
+                            this.menu.frame = SFH;
                         }
                     break;
 
@@ -313,10 +323,16 @@ var mainState = {
                             // Hide Menu
                             this.game.paused = false;
                             this.menu.visible = false;
-                            this.menu.frame = RFH;
-
-                            easyMode = false;
-                            game.state.start('hard');
+                            if (easyMode)
+                            {
+                                this.menu.frame = RFE;
+                                game.state.start('easy');
+                            }
+                            else
+                            {
+                                this.menu.frame = RFH;
+                                game.state.start('hard');
+                            }
                         }
                         // Controls Selected
                         else if (event.y <= 330)
@@ -335,9 +351,7 @@ var mainState = {
                         {
                             easyMode = true;
                             previousMenu = 
-                            this.menu.frame = RFE;
-                            this.menu.visible = false;
-                            game.state.start('easy');
+                            this.menu.frame = SFE;
                         }
                     break;
 
@@ -684,7 +698,10 @@ var easyState = {
                             {
                                 easyMode = false;
                                 previousMenu =
+                                this.game.paused = false;
                                 this.menu.frame = ROH;
+                                this.menu.visible = false;
+                                game.state.start('hard');
                             }
                         break;
 
@@ -719,6 +736,9 @@ var easyState = {
                                 easyMode = true;
                                 previousMenu =
                                 this.menu.frame = ROE;
+                                this.menu.visible = false;
+                                game.state.start('easy');
+                                this.game.paused = false;
                             }
                         break;
 
@@ -752,6 +772,8 @@ var easyState = {
                                 easyMode = false;
                                 previousMenu =
                                 this.menu.frame = RFH;
+                                this.menu.visible = false;
+                                game.state.start('hard');
                             }
                         break;
 
@@ -787,6 +809,9 @@ var easyState = {
                                 easyMode = true;
                                 previousMenu = 
                                 this.menu.frame = RFE;
+                                this.menu.visible = false;
+                                game.state.start('easy');
+                                this.game.paused = false;
                             }
                         break;
 
@@ -840,6 +865,8 @@ var easyState = {
             font:
                 "30px Arial", fill: "#ffffff" });
 
+        this.labelScore.visible = false;
+
         /*
         Shot Counter :: Text and Label
         */
@@ -849,11 +876,15 @@ var easyState = {
             game.add.text(200, 200, "6", 
                 {font: "30px Arial", fill: "#ffffff"});
 
+        this.labelShotCounter.visible = false;
         /*
         Ammo Counter :: Text and Label
         */
         this.labelAmmo = 
-            game.add.text(0, 200, "80", 
+            game.add.text(
+                this.game.width - 31, 
+                this.game.height - 100, 
+                "80",
                 {font: "30px Arial", fill: "#ffffff"});
 
         /*
@@ -888,8 +919,8 @@ var easyState = {
             HANDGUN
             */
         this.handgunAmmo = this.game.add.sprite(
-            this.game.width - (64 * 6),
-            this.game.height - 140,
+            this.game.width - (64 * 6) - 145,
+            this.game.height - 64,
             'handgunAmmo');
         this.handgunAmmo.cropEnabled = true;
 
@@ -898,8 +929,8 @@ var easyState = {
             SHOTGUN
             */
         this.shotgunAmmo = this.game.add.sprite(
-            this.game.width  - (64 * 3),
-            this.game.height - 140,
+            this.game.width  - (64 * 3) - 145,
+            this.game.height - 64,
             'shotgunAmmo');
         this.shotgunAmmo.cropEnabled = true;
         // Hide by default since handgun is default weapon
@@ -2055,10 +2086,15 @@ var easyState = {
     confirmDeath: function (player, zombie)
     {
         if (zombie.body.bottom - 40 <= 130 &&
-        zombie.body.bottom - 40 >= 90)
+        zombie.body.bottom - 40 >= 90 || 
+        zombie.body.bottom - 40 <= 210 && 
+        zombie.body.bottom - 40 >= 190)
             return true;
         else
+        {
+            console.log()
             return false;
+        }
     }
 };
 
@@ -2305,6 +2341,7 @@ var hardState = {
                                 // Hide Menu
                                 this.menu.visible = false;
                                 this.menu.frame = ROE;
+                                easyMode = true;
                                 this.restartGame();
                                 this.game.paused = false;
                             }
@@ -2324,9 +2361,11 @@ var hardState = {
                             // Difficulty Selected
                             else if (event.y <= 562)
                             {
+                                this.menu.visible = false;
                                 easyMode = false;
                                 previousMenu =
                                 this.menu.frame = ROH;
+                                game.state.start('hard');
                             }
                         break;
 
@@ -2339,6 +2378,7 @@ var hardState = {
                                 // Hide Menu
                                 this.menu.visible = false;
                                 this.menu.frame = ROH;
+                                easyMode = true;
                                 this.restartGame();
                                 this.game.paused = false;
                             }
@@ -2361,6 +2401,8 @@ var hardState = {
                                 easyMode = true;
                                 previousMenu =
                                 this.menu.frame = ROE;
+                                this.menu.visible = false;
+                                game.state.start('easy');
                             }
                         break;
 
@@ -2394,6 +2436,8 @@ var hardState = {
                                 easyMode = false;
                                 previousMenu =
                                 this.menu.frame = RFH;
+                                this.menu.visible = false;
+                                game.state.start('hard');
                             }
                         break;
 
@@ -2407,6 +2451,7 @@ var hardState = {
                                 // Hide Menu
                                 this.menu.visible = false;
                                 this.menu.frame = RFH;
+                                easyMode = false;
                                 this.restartGame();
                                 this.game.paused = false;
                             }
@@ -2429,6 +2474,8 @@ var hardState = {
                                 easyMode = true;
                                 previousMenu = 
                                 this.menu.frame = RFE;
+                                this.menu.visible = false;
+                                game.state.start('easy');
                             }
                         break;
 
@@ -2482,6 +2529,8 @@ var hardState = {
             font:
                 "30px Arial", fill: "#ffffff" });
 
+        this.labelScore.visible = false;
+
         /*
         Shot Counter :: Text and Label
         */
@@ -2491,12 +2540,19 @@ var hardState = {
             game.add.text(200, 200, "6", 
                 {font: "30px Arial", fill: "#ffffff"});
 
+
+        this.labelShotCounter.visible = false;
+
         /*
         Ammo Counter :: Text and Label
         */
         this.labelAmmo = 
-            game.add.text(0, 200, "80", 
-                {font: "30px Arial", fill: "#ffffff"});
+            game.add.text(
+                this.game.width - 31, 
+                this.game.height - 100,
+                 "80", 
+                {font: "30px Arial", fill: "#fefefe"});
+
 
         /*
         Zombie Wave Text
@@ -2530,8 +2586,8 @@ var hardState = {
             HANDGUN
             */
         this.handgunAmmo = this.game.add.sprite(
-            this.game.width - (64 * 6),
-            this.game.height - 140,
+            this.game.width - (64 * 6) - 145,
+            this.game.height - 64,
             'handgunAmmo');
         this.handgunAmmo.cropEnabled = true;
 
@@ -2540,8 +2596,8 @@ var hardState = {
             SHOTGUN
             */
         this.shotgunAmmo = this.game.add.sprite(
-            this.game.width  - (64 * 3),
-            this.game.height - 140,
+            this.game.width  - (64 * 3) - 145,
+            this.game.height - 64,
             'shotgunAmmo');
         this.shotgunAmmo.cropEnabled = true;
         // Hide by default since handgun is default weapon
@@ -3030,16 +3086,24 @@ var hardState = {
             */
         if (this.game.physics.arcade.overlap(this.container.player, this.zombie, 
             this.restartGame, null, this))
-            alert('this.container + this.zombie');
+            alert('What a terrible way to go -_- \n\n\n' +
+                'Zombies Destroyed: ' + killCounter + '\n' +
+                'Zombies Remaining: ' + maxZombies - killCounter);
         if( this.game.physics.arcade.overlap(this.container.player, this.oneBalloon, 
             this.restartGame, this.confirmDeath, this))
-            alert('this.container + this.oneBalloon');
+            alert('What a terrible way to go -_- \n\n\n' +
+                'Zombies Destroyed: ' + killCounter + '\n' +
+                'Zombies Remaining: ' + maxZombies - killCounter);
         if( this.game.physics.arcade.overlap(this.container.player, this.twoBalloons, 
             this.restartGame, this.confirmDeath, this))
-            alert('this.container + this.twoBalloons');
+            alert('What a terrible way to go -_- \n\n\n' +
+                'Zombies Destroyed: ' + killCounter + '\n' +
+                'Zombies Remaining: ' + maxZombies - killCounter);
         if( this.game.physics.arcade.overlap(this.container.player, this.threeBalloons, 
             this.restartGame, this.confirmDeath, this))
-            alert('this.container + this.threeBalloons');
+            alert('What a terrible way to go -_- \n\n\n' +
+                'Zombies Destroyed: ' + killCounter + '\n' +
+                'Zombies Remaining: ' + maxZombies - killCounter);
 
             /*
             ZOMBIE W/ BALLOON vs BULLET
@@ -3447,6 +3511,10 @@ var hardState = {
         this.score += 1;
 
         this.labelScore.text = this.score;
+
+        this.labelScore.visible = false;
+
+
     },
 
 
@@ -3695,11 +3763,13 @@ var hardState = {
 
     confirmDeath: function (player, zombie)
     {
-        if (zombie.body.bottom - 40 <= 130 &&
-        zombie.body.bottom - 40 >= 90)
+        if (zombie.body.bottom - 40 <= 210 &&
+        zombie.body.bottom - 40 >= 190)
             return true;
         else
+        {
             return false;
+        }
     }
 };
 
