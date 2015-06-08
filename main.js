@@ -187,6 +187,22 @@ var mainState = {
         game.load.spritesheet('shotgunGUI', 
             'assets/ShotgunGUI.png', 90, 50);
 
+
+        /*
+        Ammo GUI
+        */
+            /*
+            Handgun
+            */
+        game.load.image('handgunAmmo',
+            'assets/HandgunAmmo.png');
+
+            /*
+            Shotgun
+            */
+        game.load.image('shotgunAmmo',
+            'assets/ShotgunAmmo.png');
+
         /*
         MENU GUI
         */
@@ -509,8 +525,34 @@ var mainState = {
         */
         this.handgunGUI = this.game.add.sprite(
             this.game.width - 140, this.game.height - 70, "handgunGUI", SELECTED);
+
         this.shotgunGUI = this.game.add.sprite(
             this.handgunGUI.x+50, this.game.height - 70, "shotgunGUI", DEFAULT);
+
+        /*
+        AMMO GUI OBJECT
+        */
+            /*
+            HANDGUN
+            */
+        this.handgunAmmo = this.game.add.sprite(
+            this.game.width - (64 * 6),
+            this.game.height - 140,
+            'handgunAmmo');
+        this.handgunAmmo.cropEnabled = true;
+
+
+            /*
+            SHOTGUN
+            */
+        this.shotgunAmmo = this.game.add.sprite(
+            this.game.width  - (64 * 3),
+            this.game.height - 140,
+            'shotgunAmmo');
+        this.shotgunAmmo.cropEnabled = true;
+        // Hide by default since handgun is default weapon
+        this.shotgunAmmo.visible = false;
+
 
 
         /*
@@ -706,8 +748,8 @@ var mainState = {
         this.container.shotgun.fireRate = 1550;
         this.container.shotgun.maxAmmo = 30;
         this.container.shotgun.ammoLeft = 30;
-        this.container.shotgun.maxRounds = 6;
-        this.container.shotgun.roundsLeft = 6;
+        this.container.shotgun.maxRounds = 3;
+        this.container.shotgun.roundsLeft = 3;
         this.container.shotgun.reloading = false;
         this.container.shotgun.reloadTime = 1000;
         this.container.shotgun.cooldown = 0;
@@ -854,6 +896,8 @@ var mainState = {
             this.restartGame();
         }
 
+        this.shotgunAmmo.updateCrop();
+        this.handgunAmmo.updateCrop();
 
         /*
         AIMING
@@ -917,21 +961,28 @@ var mainState = {
                 if (this.container.shotgun.ammoLeft > 0 &&
                     this.container.shotgun.reloading == false)
                 {
+                    // Hide Handgun Ammo GUI
+                    this.handgunAmmo.visible = false;
+
+                    // Show the Shotgun Ammo GUI
+                    this.shotgunAmmo.visible = true;
+
+                    // Set Current Weapon
                     this.container.currentWeapon = 
                         this.container.shotgun;
 
                     this.container.currentWeapon.GUI = 
                         this.shotgunGUI;
 
+
                     // Unselect Handgun
-                    // This check should be unnecessary.. how else would you be comming
-                    // from handgun if you didn't still have ammo?
                     if (this.container.handgun.ammoLeft > 0 &&
                         this.container.handgun.reloading == false)
                     {
                         this.handgunGUI.frame = DEFAULT;
                     }
 
+                    // Hide Handgun
                     this.container.handgun.visible = false;
 
                     // Switch to shotgun
@@ -952,11 +1003,18 @@ var mainState = {
                 if (this.container.handgun.ammoLeft > 0 &&
                     this.container.handgun.reloading == false)
                 {
+                    // Hide the Shotgun Ammo GUI
+                    this.shotgunAmmo.visible = false;
+
+                    // Show Handgun Ammo GUI
+                    this.handgunAmmo.visible = true;
+
                     this.container.currentWeapon = 
                         this.container.handgun;
 
                     this.container.currentWeapon.GUI = 
                         this.handgunGUI;
+
 
                     // Unselect Shotgun
                     if (this.container.shotgun.ammoLeft > 0 &&
@@ -979,20 +1037,26 @@ var mainState = {
             }
         }
 
+        /*
+        Switch Weapon GUI Dynamically
+        */
             /*
-            Switching Weapon Layout Graphics
+            SHOTGUN DONE RELOADING
             */
-            // Shotgun Done reloading
         if (this.container.shotgun.reloading == true &&
             this.game.time.now - this.container.shotgun.cooldown > 
                 this.container.shotgun.reloadTime)
         {
             this.container.shotgun.reloading = false;
 
+            // Refill the Ammo GUI
+            this.shotgunAmmo.crop();
+
             // Player using Shotgun, but it was reloading
             if (this.player.weapon == 'Shotgun')
             {
                 this.shotgunGUI.frame = SELECTED;
+                this.shotgunAmmo.visible = true;
             }
             // Player using Handgun, but show Shotgun is ready
             else
@@ -1000,16 +1064,22 @@ var mainState = {
                 this.shotgunGUI.frame = DEFAULT;
             }
         }
-
+            /*
+            HANDGUN DONE RELOADING
+            */
         if (this.container.handgun.reloading == true &&
             this.game.time.now - this.container.handgun.cooldown >
             this.container.handgun.reloadTime)
         {
             this.container.handgun.reloading = false;
 
+            // Refill the Ammo GUI
+            this.handgunAmmo.crop();
+
             if (this.player.weapon == 'Handgun')
             {
                 this.handgunGUI.frame = SELECTED;
+                this.handgunAmmo.visible = true;
             }
             else
             {
@@ -1370,6 +1440,12 @@ var mainState = {
             _zombie.exists = true;
             _zombie.frame = zombieType;
 
+            /* 
+            Give the zombie phsyics
+                Removed when tween is added
+            */
+            _zombie.body.moves = true;
+
             _zombie.reset(x, y);
 
             // Random Movement
@@ -1402,23 +1478,11 @@ var mainState = {
                      0,
                      false );
                 // Remove when finished
-                //  Hopefully prevents the random spawn issue
                 _zombie.tween.onComplete.add(function() {
                     this.removeTween(_zombie);
                 }, this);
             }
 
-
-            /*
-           );
-            */
-            /*
-            game.physics.arcade.moveToObject(
-                _zombie,
-                this.container.player,
-                _zombie.rate,
-                );
-            */
 
             _zombie.checkWorldBounds = true;
             _zombie.outOfBoundsKill = true;
@@ -1652,6 +1716,11 @@ var mainState = {
                 this.container.handgun.ammoLeft--;
                 this.container.handgun.roundsLeft--;
 
+                // Decrease the HandgunAmmo GUI 
+                this.handgunAmmo.crop(
+                    new Phaser.Rectangle(0, 0, 
+                        64*this.container.handgun.roundsLeft, 64));
+
                 this.container.currentWeapon.ammoLeft =
                     this.container.handgun.ammoLeft;
                 this.container.currentWeapon.roundsLeft =
@@ -1670,6 +1739,9 @@ var mainState = {
 
                         this.container.handgun.reloading = true;
 
+                        // Hide the Handgun Ammo GUI
+                        this.handgunAmmo.visible = false;
+
                         this.handgunGUI.frame = RELOAD;
                     }
 
@@ -1683,7 +1755,12 @@ var mainState = {
                     this.game.time.now + this.container.handgun.fireRate;
                 }
                 else
+                {
                     this.handgunGUI.frame = NO_AMMO;                    
+
+                    // Make sure the GUI is gone
+                    this.handgunAmmo.kill();
+                }
             }
         }
         else if (this.player.weapon == 'Shotgun' &&
@@ -1708,6 +1785,13 @@ var mainState = {
                 this.container.shotgun.ammoLeft--;
                 this.container.shotgun.roundsLeft--;
 
+
+                // Decrease shotgun ammo GUI
+                this.shotgunAmmo.crop(
+                    new Phaser.Rectangle(0, 0, 
+                        64*this.container.shotgun.roundsLeft, 64));
+
+
                 this.container.currentWeapon.ammoLeft =
                     this.container.shotgun.ammoLeft;
                 this.container.currentWeapon.roundsLeft =
@@ -1729,6 +1813,9 @@ var mainState = {
                         this.container.shotgun.reloading = true;
                         this.container.currentWeapon.reloading = true;
 
+                        // Hide the Shotgun Ammo GUI
+                        this.shotgunAmmo.visible = false;
+
                         this.shotgunGUI.frame = RELOAD;
                     }
 
@@ -1736,7 +1823,12 @@ var mainState = {
                     this.game.time.now + this.container.shotgun.fireRate;
                 }
                 else
+                {
                     this.shotgunGUI.frame = NO_AMMO;                    
+
+                    // Make sure shotgun ammo GUI is gone
+                    this.shotgunAmmo.kill();
+                }
             }
         }
     },
