@@ -2428,7 +2428,7 @@ var hardState = {
         // This games properties
         easyMode = false;
 
-        rateOfSpawn = 1900;
+        rateOfSpawn = 3000;
 
         maxZombies = 300;
 
