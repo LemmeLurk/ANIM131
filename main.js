@@ -1164,8 +1164,8 @@ var easyState = {
 
         this.container.handgun.nextFire = 0;
         this.container.handgun.fireRate = 270;
-        this.container.handgun.maxAmmo = 186;
-        this.container.handgun.ammoLeft = 186;
+        this.container.handgun.maxAmmo = 286;
+        this.container.handgun.ammoLeft = 286;
         this.container.handgun.maxRounds = 6;
         this.container.handgun.roundsLeft = 6;
         this.container.handgun.reloading = false;
@@ -2430,7 +2430,7 @@ var hardState = {
 
         rateOfSpawn = 3000;
 
-        maxZombies = 300;
+        maxZombies = 200;
 
         music = game.add.audio('musicBox');
         music.loop = true;
@@ -2582,6 +2582,7 @@ var hardState = {
 
         this.WaveGauge.cropEnabled = true;
 
+        this.WaveGauge.scale.x *= 2;
 
 
         /*
@@ -3630,7 +3631,7 @@ var hardState = {
             case 5:
                 _currentNumberWeights = numberWeights.sixth;  
 
-                night.fadeIn(30000, false, '');
+                night.fadeIn(30000, true, '');
             break;
 
             case 6:
