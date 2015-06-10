@@ -98,10 +98,13 @@ var CONTROLS = 8;
 
 var gameStarted = false;
 var easyMode = true;
+var changeDifficulty = false;
 var soundOn = true;
 var inControl = false;
 
 var previousMenu = SOE;
+
+var mute = false;
 
 // Zombie Tween
 var tween;
@@ -202,11 +205,15 @@ var mainState = {
                             if (easyMode)
                             {
                                 this.menu.frame = ROE;
+                                if (!soundOn)
+                                    mute = true;
                                 game.state.start('easy');
                             }
                             else
                             {
                                 this.menu.frame = ROH;
+                                if (!soundOn)
+                                    mute = true;
                                 game.state.start('hard');
                             }
                         }
@@ -243,11 +250,15 @@ var mainState = {
                             if (easyMode)
                             {
                                 this.menu.frame = ROE;
+                                if (!soundOn)
+                                    mute = true;
                                 game.state.start('easy');
                             }
                             else
                             {
                                 this.menu.frame = ROH;
+                                if (!soundOn)
+                                    mute = true;
                                 game.state.start('hard');
                             }
                         }
@@ -284,11 +295,15 @@ var mainState = {
                             if (easyMode)
                             {
                                 this.menu.frame = RFE;
+                                if (!soundOn)
+                                    mute = true;
                                 game.state.start('easy');
                             }
                             else
                             {
                                 this.menu.frame = RFH;
+                                if (!soundOn)
+                                    mute = true;
                                 game.state.start('hard');
                             }
                         }
@@ -326,11 +341,15 @@ var mainState = {
                             if (easyMode)
                             {
                                 this.menu.frame = RFE;
+                                if (!soundOn)
+                                    mute = true;
                                 game.state.start('easy');
                             }
                             else
                             {
                                 this.menu.frame = RFH;
+                                if (!soundOn)
+                                    mute = true;
                                 game.state.start('hard');
                             }
                         }
@@ -475,6 +494,11 @@ var easyState = {
         game.stage.backgroundColor = 
             backgroundColor[currentBackground];
 
+
+            game.load.audio(
+                'musicBox', 
+                ['audio/musicBox.mp3', 'audio/musicBox.ogg']);    
+
         // Load the image of Cloud
         game.load.image('cloud', 'assets/cloud.png');
 
@@ -574,6 +598,15 @@ var easyState = {
 
         maxZombies = 150;
 
+        music = game.add.audio('musicBox');
+        music.loop = true;
+
+        if (soundOn)
+        {
+            mute = false;
+            music.play(); 
+        }
+
         /*
         Capture Keys
         */
@@ -589,7 +622,8 @@ var easyState = {
         this.pauseKey =
             game.input.keyboard.addKey(27);
 
-        this.pauseKey.onDown.add(function () {
+        this.pauseKey.onDown.add(function () 
+        {
             if(this.game.paused)
             {
                 this.game.paused = false;
@@ -665,163 +699,220 @@ var easyState = {
                 else if (event.x >= 336 && event.x <= 747 && 
                         event.y >= 119 && event.y <= 562)
                 {
-                    console.log ('Menu: ' + this.menu.frame);
-                    switch (this.menu.frame)
+                    // EasyMode is ON
+                    if (easyMode)
                     {
-                        // Restart | Sound: On | Mode: Easy
-                        case ROE:
-                            previousMenu = ROE;
-                            // Restart Selected
-                            if(event.y <= 218)
-                            {
-                                // Hide Menu
-                                this.menu.visible = false;
-                                this.menu.frame = ROE;
-                                this.restartGame();
-                                this.game.paused = false;
-                            }
-                            // Controls Selected
-                            else if (event.y <= 330)
-                            {
-                                inControl = true;
-                                this.menu.frame = CONTROLS;
-                            }
-                            // Sound Selected | OFF
-                            else if (event.y <= 447)
-                            {
-                                soundOn = false;
-                                music.stop(); 
-                                this.menu.frame = RFE;
-                            }
-                            // Difficulty Selected
-                            else if (event.y <= 562)
-                            {
-                                easyMode = false;
-                                previousMenu =
-                                this.game.paused = false;
-                                this.menu.frame = ROH;
-                                this.menu.visible = false;
-                                game.state.start('hard');
-                            }
-                        break;
+                        switch (this.menu.frame)
+                        {
+                            // Restart | Sound: On | Mode: Easy
+                            case ROE: case ROH:
+                                previousMenu = ROE;
 
-                        // Restart | Sound: On | Mode: Hard 
-                        case ROH:
-                            previousMenu = ROH;
-                            // Restart Selected
-                            if(event.y <= 218)
-                            {
-                                // Hide Menu
-                                this.menu.visible = false;
-                                this.menu.frame = ROH;
-                                this.restartGame();
-                                this.game.paused = false;
-                            }
-                            // Controls Selected
-                            else if (event.y <= 330)
-                            {
-                                inControl = true;
-                                this.menu.frame = CONTROLS;
-                            }
-                            // Sound Selected | OFF
-                            else if (event.y <= 447)
-                            {
-                                soundOn = true;
-                                music.stop(); 
-                                this.menu.frame = RFH;
-                            }
-                            // Difficulty Selected
-                            else if (event.y <= 562)
-                            {
-                                easyMode = true;
-                                previousMenu =
-                                this.menu.frame = ROE;
-                                this.menu.visible = false;
-                                game.state.start('easy');
-                                this.game.paused = false;
-                            }
-                        break;
+                                // Restart Selected
+                                if(event.y <= 218)
+                                {
+                                    // Hide Menu
+                                    if (changeDifficulty)
+                                    {
+                                        this.menu.frame = ROH;
+                                        if (!soundOn)
+                                            mute = true;
+                                        game.state.start('hard');
+                                    }
+                                    else
+                                    {
+                                        this.menu.frame = ROE;
+                                        if(!soundOn)
+                                            mute = true;
+                                        game.state.start('easy');
+                                    }
+     
+                                    this.game.paused = false;
+                                    this.menu.visible = false;
+                                }
+                                // Controls Selected
+                                else if (event.y <= 330)
+                                {
+                                    inControl = true;
+                                    this.menu.frame = CONTROLS;
+                                }
+                                // Sound Selected | OFF
+                                else if (event.y <= 447)
+                                {
+                                    soundOn = false;
+                                    music.pause(); 
+                                    this.menu.frame = RFE;
+                                }
+                                // Difficulty Selected | HARD
+                                else if (event.y <= 562)
+                                {
+                                    changeDifficulty = true;
+                                    previousMenu = ROE;
+                                    this.menu.frame = ROH;
+                                }
+                            break;
 
-                        // Restart | Sound: Off | Mode: Easy
-                        case RFE:
-                            previousMenu = RFE;
-                            // Restart Selected
-                            if(event.y <= 218)
-                            {
-                                // Hide Menu
-                                this.menu.visible = false;
-                                this.menu.frame = RFE;
-                                this.restartGame();
-                                this.game.paused = false;
-                            }
-                            // Controls Selected
-                            else if (event.y <= 330)
-                            {
-                                inControl = true;
-                                this.menu.frame = CONTROLS;
-                            }
-                            // Sound Selected | ON
-                            else if (event.y <= 447)
-                            {
-                                music.play(); 
-                                this.menu.frame = ROE;
-                            }
-                            // Difficulty Selected | HARD
-                            else if (event.y <= 562)
-                            {
-                                easyMode = false;
-                                previousMenu =
-                                this.menu.frame = RFH;
-                                this.menu.visible = false;
-                                game.state.start('hard');
-                            }
-                        break;
+                            // Sound OFF 
+                            case RFE:
+                                previousMenu = RFE;
 
-                        // Restart | Sound: Off | Mode: Hard
-                        case RFH:
-                            previousMenu = RFH;
+                                // Restart Selected
+                                if(event.y <= 218)
+                                {
+                                    // Hide Menu
+                                    if (changeDifficulty)
+                                    {
+                                        this.menu.frame = RFH;
+                                        if (!soundOn)
+                                            mute = true;
+                                        game.state.start('hard');
+                                    }
+                                    else
+                                    {
+                                        this.menu.frame = RFE;
+                                        if (!soundOn)
+                                            mute = true;
+                                        game.state.start('easy');
+                                    }
 
-                            // Restart Selected
-                            if(event.y <= 218)
-                            {
-                                // Hide Menu
-                                this.menu.visible = false;
-                                this.menu.frame = RFH;
-                                this.restartGame();
-                                this.game.paused = false;
-                            }
-                            // Controls Selected
-                            else if (event.y <= 330)
-                            {
-                                inControl = true;
-                                this.menu.frame = CONTROLS;
-                            }
-                            // Sound Selected | ON
-                            else if (event.y <= 447)
-                            {
-                                soundOn = true;
-                                music.play(); 
-                                this.menu.frame = ROH;
-                            }
-                            // Difficulty Selected | EASY
-                            else if (event.y <= 562)
-                            {
-                                easyMode = true;
-                                previousMenu = 
-                                this.menu.frame = RFE;
-                                this.menu.visible = false;
-                                game.state.start('easy');
-                                this.game.paused = false;
-                            }
-                        break;
+                                    this.game.paused = false;
+                                    this.menu.visible = false;
+                                }
+                                // Controls Selected
+                                else if (event.y <= 330)
+                                {
+                                    inControl = true;
+                                    this.menu.frame = CONTROLS;
+                                }
+                                // Sound Selected | ON
+                                else if (event.y <= 447)
+                                {
+                                    soundOn = true;
+                                    if (mute)
+                                        music.play();
+                                    else
+                                        music.resume(); 
+                                    this.menu.frame = ROE;
+                                }
+                                // Difficulty Selected | HARD
+                                else if (event.y <= 562)
+                                {
+                                    changeDifficulty = true;
+                                    this.menu.frame = RFH;
+                                }
+                            break;
+                        } // End Switch 
 
-                        default:
-                            console.log('default summoned!');
-                            console.log('this.menu.frame: ' + this.menu.frame);
-                            this.menu.frame = previousMenu;
-                        break;
-                    }
-                }
+                    } // End EasyMode is ON 
+                    else
+                    {
+                        switch (this.menu.frame)
+                        {
+                            // Sound ON 
+                            case ROH:
+                                previousMenu = ROH;
+
+                                // Restart Selected
+                                if(event.y <= 218)
+                                {
+                                    // Hide Menu
+                                    if (changeDifficulty)
+                                    {
+                                        easyMode = true;
+                                        this.menu.frame = ROE;
+                                        if (!soundOn)
+                                            mute = true;
+                                        game.state.start('easy');
+                                    }
+                                    else
+                                    {
+                                        this.menu.frame = ROH;
+                                        if (!soundOn)
+                                            mute = true;
+                                        game.state.start('hard');
+                                    }
+
+                                    this.menu.visible = false;
+                                    this.game.paused = false;
+                                }
+                                // Controls Selected
+                                else if (event.y <= 330)
+                                {
+                                    inControl = true;
+                                    this.menu.frame = CONTROLS;
+                                }
+                                // Sound Selected | OFF
+                                else if (event.y <= 447)
+                                {
+                                    soundOn = true;
+                                    if (mute)
+                                        music.play();
+                                    else
+                                        music.resume(); 
+                                    this.menu.frame = RFH;
+                                }
+                                // Difficulty Selected | EASY
+                                else if (event.y <= 562)
+                                {
+                                    changeDifficulty = true;
+                                    this.menu.frame = ROE;
+                                }
+                            break;
+
+                            // Restart | Sound: Off | Mode: Hard
+                            case RFH:
+                                previousMenu = RFH;
+
+                                // Restart Selected
+                                if(event.y <= 218)
+                                {
+                                    // Hide Menu
+                                    if (changeDifficulty)
+                                    {
+                                        easyMode = true;
+                                        this.menu.frame = RFE; 
+                                        if (!soundOn)
+                                            mute = true;
+                                        game.state.start('easy');
+                                    }
+                                    else
+                                    {
+                                        this.menu.frame = RFH;
+                                        if (!soundOn)
+                                            mute = true;
+                                        game.state.start('hard');
+                                    }
+
+                                    this.menu.visible = false;
+                                    this.game.paused = false;
+                                }
+                                // Controls Selected
+                                else if (event.y <= 330)
+                                {
+                                    inControl = true;
+                                    this.menu.frame = CONTROLS;
+                                }
+                                // Sound Selected | ON
+                                else if (event.y <= 447)
+                                {
+                                    soundOn = true;
+                                    if (mute)
+                                        music.play();
+                                    else
+                                        music.resume(); 
+                                    this.menu.frame = ROH;
+                                }
+                                // Difficulty Selected | EASY
+                                else if (event.y <= 562)
+                                {
+                                    changeDifficulty = true;
+                                    previousMenu = RFH;
+                                    this.menu.frame = RFE;
+                                }
+                            break;
+                        } // End Switch
+                    } // End Else: EasyMode OFF
+                } // End Check for InBounds
                 else
                 {
                     console.log('x: ' + event.x + ' y: ' + event.y);
@@ -1419,16 +1510,24 @@ var easyState = {
             */
         if (this.game.physics.arcade.overlap(this.container.player, this.zombie, 
             this.restartGame, null, this))
-            alert('this.container + this.zombie');
+            alert('What a terrible way to go -_- \n\n\n' +
+                'Zombies Destroyed: ' + killCounter + '\n' +
+                'Zombies Remaining: ' + maxZombies - killCounter);
         if( this.game.physics.arcade.overlap(this.container.player, this.oneBalloon, 
             this.restartGame, this.confirmDeath, this))
-            alert('this.container + this.oneBalloon');
+            alert('What a terrible way to go -_- \n\n\n' +
+                'Zombies Destroyed: ' + killCounter + '\n' +
+                'Zombies Remaining: ' + maxZombies - killCounter);
         if( this.game.physics.arcade.overlap(this.container.player, this.twoBalloons, 
             this.restartGame, this.confirmDeath, this))
-            alert('this.container + this.twoBalloons');
+            alert('What a terrible way to go -_- \n\n\n' +
+                'Zombies Destroyed: ' + killCounter + '\n' +
+                'Zombies Remaining: ' + maxZombies - killCounter);
         if( this.game.physics.arcade.overlap(this.container.player, this.threeBalloons, 
             this.restartGame, this.confirmDeath, this))
-            alert('this.container + this.threeBalloons');
+            alert('What a terrible way to go -_- \n\n\n' +
+                'Zombies Destroyed: ' + killCounter + '\n' +
+                'Zombies Remaining: ' + maxZombies - killCounter);
 
             /*
             ZOMBIE W/ BALLOON vs BULLET
@@ -2137,6 +2236,11 @@ var hardState = {
         game.stage.backgroundColor = 
             backgroundColor[currentBackground];
 
+            game.load.audio(
+                'musicBox',
+                ['audio/musicBox.mp3',
+                'audio/musicBox.ogg']);
+
         // Load the image of Cloud
         game.load.image('cloud', 'assets/cloud.png');
 
@@ -2237,6 +2341,12 @@ var hardState = {
         rateOfSpawn = 1900;
 
         maxZombies = 200;
+
+       music = game.add.audio('musicBox');
+
+        if (soundOn)
+           music.play(); 
+
 
         /*
         Capture Keys
@@ -2341,8 +2451,20 @@ var hardState = {
                                 // Hide Menu
                                 this.menu.visible = false;
                                 this.menu.frame = ROE;
-                                easyMode = true;
-                                this.restartGame();
+                                if (easyMode)
+                                {
+                                    this.menu.frame = ROE;
+                                    if (!soundOn)
+                                        mute = true;
+                                    game.state.start('easy');
+                                }
+                                else
+                                {
+                                    this.memu.frame = ROH;
+                                    if (!soundOn)
+                                        mute = true;
+                                    game.stae.start('hard');
+                                }
                                 this.game.paused = false;
                             }
                             // Controls Selected
@@ -2355,17 +2477,18 @@ var hardState = {
                             else if (event.y <= 447)
                             {
                                 soundOn = false;
-                                music.stop(); 
                                 this.menu.frame = RFE;
                             }
                             // Difficulty Selected
                             else if (event.y <= 562)
                             {
-                                this.menu.visible = false;
                                 easyMode = false;
+                                // Set previous so if user
+                                // enters control at this
+                                // point the sound option
+                                // stays consistent
                                 previousMenu =
                                 this.menu.frame = ROH;
-                                game.state.start('hard');
                             }
                         break;
 
@@ -2377,9 +2500,20 @@ var hardState = {
                             {
                                 // Hide Menu
                                 this.menu.visible = false;
-                                this.menu.frame = ROH;
-                                easyMode = true;
-                                this.restartGame();
+                                if (easyMode)
+                                {
+                                    this.menu.frame = ROE;
+                                    if (!soundOn)
+                                        mute = true;
+                                    game.state.start('easy');
+                                }
+                                else
+                                {
+                                    this.memu.frame = ROH;
+                                    if (!soundOn)
+                                        mute = true;
+                                    game.stae.start('hard');
+                                }
                                 this.game.paused = false;
                             }
                             // Controls Selected
@@ -2391,18 +2525,16 @@ var hardState = {
                             // Sound Selected | OFF
                             else if (event.y <= 447)
                             {
-                                soundOn = true;
-                                music.stop(); 
+                                soundOn = false;
+                                music.pause(); 
                                 this.menu.frame = RFH;
                             }
-                            // Difficulty Selected
+                            // Difficulty Selected | EASY
                             else if (event.y <= 562)
                             {
                                 easyMode = true;
                                 previousMenu =
                                 this.menu.frame = ROE;
-                                this.menu.visible = false;
-                                game.state.start('easy');
                             }
                         break;
 
@@ -2414,8 +2546,20 @@ var hardState = {
                             {
                                 // Hide Menu
                                 this.menu.visible = false;
-                                this.menu.frame = RFE;
-                                this.restartGame();
+                                if (easyMode)
+                                {
+                                    this.menu.frame = RFE;
+                                    if (!soundOn)
+                                        mute = true;
+                                    game.state.start('easy');
+                                }
+                                else
+                                {
+                                    this.menu.frame = RFH;
+                                    if (!soundOn)
+                                        mute = true;
+                                    game.state.start('hard');
+                                }
                                 this.game.paused = false;
                             }
                             // Controls Selected
@@ -2427,7 +2571,11 @@ var hardState = {
                             // Sound Selected | ON
                             else if (event.y <= 447)
                             {
-                                music.play(); 
+                                soundOn = true;
+                                if (mute)
+                                    music.play();
+                                else
+                                    music.resume(); 
                                 this.menu.frame = ROE;
                             }
                             // Difficulty Selected | HARD
@@ -2436,8 +2584,6 @@ var hardState = {
                                 easyMode = false;
                                 previousMenu =
                                 this.menu.frame = RFH;
-                                this.menu.visible = false;
-                                game.state.start('hard');
                             }
                         break;
 
@@ -2450,9 +2596,20 @@ var hardState = {
                             {
                                 // Hide Menu
                                 this.menu.visible = false;
-                                this.menu.frame = RFH;
-                                easyMode = false;
-                                this.restartGame();
+                                if (easyMode)
+                                {
+                                    this.menu.frame = RFE;
+                                    if (!soundOn)
+                                        mute = true;
+                                    game.state.start('easy');
+                                }
+                                else
+                                {
+                                    this.menu.frame = RFH;
+                                    if (!soundOn)
+                                        mute = true;
+                                    game.state.start('hard');
+                                }
                                 this.game.paused = false;
                             }
                             // Controls Selected
@@ -2465,7 +2622,10 @@ var hardState = {
                             else if (event.y <= 447)
                             {
                                 soundOn = true;
-                                music.play(); 
+                                if (mute)
+                                    music.play();
+                                else
+                                    music.resume(); 
                                 this.menu.frame = ROH;
                             }
                             // Difficulty Selected | EASY
@@ -2474,8 +2634,6 @@ var hardState = {
                                 easyMode = true;
                                 previousMenu = 
                                 this.menu.frame = RFE;
-                                this.menu.visible = false;
-                                game.state.start('easy');
                             }
                         break;
 
