@@ -112,6 +112,9 @@ var tween;
 var oneHitbox;
 
 var music;
+var victory;
+var dusk;
+var night;
 
 var windowWidth = $(window).width();
 var windowHeight = $(window).height();
@@ -622,6 +625,9 @@ var winState =
     {
         game.load.image('winBackground', 'assets/winBackground.png');
         game.load.spritesheet('winMenu', 'assets/winMenu.png', 413, 216);
+
+        game.load.audio('victory', 
+            ['audio/victory.mp3', 'audio/victory.ogg']);
     },
 
     create: function()
@@ -634,6 +640,11 @@ var winState =
             game.world.height - 413,
             'winMenu', 0);
         //this.winMenu.scale.set(.7, .7);
+
+        victory = game.add.audio('victory');
+
+        victory.play();
+
 
         // Hopefully this works
         this.game.input.onDown.add(pauseHandler, this);
@@ -659,6 +670,7 @@ var winState =
                             {
                                 if (!soundOn)
                                     mute = true;
+                                victory.fadeOut(1000);
                                 easyState.restartGame();
                                 game.state.start('easy',true,true);
                             }
@@ -666,6 +678,7 @@ var winState =
                             {
                                 if (!soundOn)
                                     mute = true;
+                                victory.fadeOut(1000);
                                 hardState.restartGame();
                                 game.state.start('hard',true,true);
                             }
@@ -687,6 +700,7 @@ var winState =
                             {
                                 if (!soundOn)
                                     mute = true;
+                                victory.stop();
                                 easyState.restartGame();
                                 game.state.start('easy',true,true);
                             }
@@ -694,6 +708,8 @@ var winState =
                             {
                                 if (!soundOn)
                                     mute = true;
+                                //victory.fadeOut();
+                                victory.stop();
                                 hardState.restartGame();
                                 game.state.start('hard',true,true);
                             }
@@ -767,6 +783,14 @@ var easyState = {
             game.load.audio(
                 'musicBox', 
                 ['audio/musicBox.mp3', 'audio/musicBox.ogg']);    
+
+            game.load.audio(
+                'dusk',
+                ['audio/dusk.mp3', 'audio/dusk.ogg']);
+
+            game.load.audio(
+                'night',
+                ['audio/night.mp3', 'audio/night.ogg']);
 
         // Load the image of Cloud
         game.load.image('cloud', 'assets/cloud.png');
@@ -873,8 +897,17 @@ var easyState = {
         if (soundOn)
         {
             mute = false;
+            music.volume -= 0.85;
             music.play(); 
         }
+
+        dusk = game.add.audio('dusk');
+
+        dusk.loop = true;
+
+        night = game.add.audio('night');
+
+        night.loop = true;
 
         /*
         Capture Keys
@@ -942,8 +975,8 @@ var easyState = {
             /*
             SPAWN ZOMBIES
             */
-        this.timer = game.time.events.loop(rateOfSpawn, 
-            this.addZombieHorde, this);
+        //this.timer = game.time.events.loop(rateOfSpawn, 
+        //    this.addZombieHorde, this);
 
 
         this.reloadTimer = 
@@ -1131,8 +1164,8 @@ var easyState = {
 
         this.container.handgun.nextFire = 0;
         this.container.handgun.fireRate = 270;
-        this.container.handgun.maxAmmo = 80;
-        this.container.handgun.ammoLeft = 80;
+        this.container.handgun.maxAmmo = 186;
+        this.container.handgun.ammoLeft = 186;
         this.container.handgun.maxRounds = 6;
         this.container.handgun.roundsLeft = 6;
         this.container.handgun.reloading = false;
@@ -1164,8 +1197,8 @@ var easyState = {
 
         this.container.shotgun.nextFire = 0;
         this.container.shotgun.fireRate = 1550;
-        this.container.shotgun.maxAmmo = 30;
-        this.container.shotgun.ammoLeft = 30;
+        this.container.shotgun.maxAmmo = 51;
+        this.container.shotgun.ammoLeft = 51;
         this.container.shotgun.maxRounds = 3;
         this.container.shotgun.roundsLeft = 3;
         this.container.shotgun.reloading = false;
@@ -1318,6 +1351,8 @@ var easyState = {
         if (killCounter === maxZombies)
         {
             music.stop();
+            dusk.stop();
+            night.fadeOut();
 
             game.state.start('win', true, true);
         }
@@ -1527,6 +1562,8 @@ var easyState = {
             function()
             {
                 music.stop();
+                dusk.stop();
+                night.stop();
                 game.state.start('end',true,true);
             }, null, this);
 
@@ -1534,6 +1571,8 @@ var easyState = {
             function() 
             {
                 music.stop();
+                dusk.stop();
+                night.stop();
                 game.state.start('end',true,true);
             }, this.confirmDeath, this);
 
@@ -1541,6 +1580,8 @@ var easyState = {
             function()
             {
                 music.stop();
+                dusk.stop();
+                night.stop();
                 game.state.start('end',true,true);
             }, this.confirmDeath, this);
 
@@ -1548,6 +1589,8 @@ var easyState = {
             function()
             {
                 music.stop();
+                dusk.stop();
+                night.stop();
                 game.state.start('end',true,true);
             }, this.confirmDeath, this);
 
@@ -1625,6 +1668,14 @@ var easyState = {
     {
         // Set Easy Mode
         easyMode = true;
+
+        // Stop all music
+        if (music)
+            music.stop();
+        if (dusk)
+            dusk.stop();
+        if (night)
+            night.stop();
 
         // Start the 'main'state, which restarts the game
         killCounter = 0;
@@ -2010,6 +2061,11 @@ var easyState = {
 
             case 4:
                 _currentNumberWeights = numberWeights.fifth;  
+                // Fade out Music Box
+                music.fadeOut(5500);
+
+                // Fade In Dusk
+                dusk.fadeIn(10000, true, '');
             break;
 
             case 5:
@@ -2023,6 +2079,12 @@ var easyState = {
 
             case 7:
                 _currentNumberWeights = numberWeights.eigth;  
+
+                // Slowly Fade out Dusk
+                dusk.fadeOut(15000);
+
+                // Slowly start fading in Night
+                night.fadeIn(30000, false, '');
             break;
 
             case 8:
@@ -2261,6 +2323,14 @@ var hardState = {
                 ['audio/musicBox.mp3',
                 'audio/musicBox.ogg']);
 
+            game.load.audio(
+                'dusk',
+                ['audio/dusk.mp3', 'audio/dusk.ogg']);
+
+            game.load.audio(
+                'night',
+                ['audio/night.mp3', 'audio/night.ogg']);
+
         // Load the image of Cloud
         game.load.image('cloud', 'assets/cloud.png');
 
@@ -2360,12 +2430,25 @@ var hardState = {
 
         rateOfSpawn = 1900;
 
-        maxZombies = 200;
+        maxZombies = 300;
 
-       music = game.add.audio('musicBox');
+        music = game.add.audio('musicBox');
+        music.loop = true;
 
         if (soundOn)
-           music.play(); 
+        {
+            mute = false;
+            music.volume -= 0.85;
+            music.play(); 
+            music.loop = true;
+        }
+
+        dusk = game.add.audio('dusk');
+        dusk.loop = true;
+
+        night = game.add.audio('night');
+
+        night.loop = true;
 
 
         /*
@@ -2623,13 +2706,13 @@ var hardState = {
         this.container.handgun.angle = 0;
 
         this.container.handgun.nextFire = 0;
-        this.container.handgun.fireRate = 270;
-        this.container.handgun.maxAmmo = 80;
-        this.container.handgun.ammoLeft = 80;
+        this.container.handgun.fireRate = 350;
+        this.container.handgun.maxAmmo = 426;
+        this.container.handgun.ammoLeft = 426;
         this.container.handgun.maxRounds = 6;
         this.container.handgun.roundsLeft = 6;
         this.container.handgun.reloading = false;
-        this.container.handgun.reloadTime = 1500;
+        this.container.handgun.reloadTime = 1100;
         this.container.handgun.cooldown = 0;
 
                 /*
@@ -2657,8 +2740,8 @@ var hardState = {
 
         this.container.shotgun.nextFire = 0;
         this.container.shotgun.fireRate = 1550;
-        this.container.shotgun.maxAmmo = 30;
-        this.container.shotgun.ammoLeft = 30;
+        this.container.shotgun.maxAmmo = 45;
+        this.container.shotgun.ammoLeft = 45;
         this.container.shotgun.maxRounds = 3;
         this.container.shotgun.roundsLeft = 3;
         this.container.shotgun.reloading = false;
@@ -2811,6 +2894,8 @@ var hardState = {
         if (killCounter === maxZombies)
         {
             music.stop();
+            dusk.stop();
+            night.fadeOut();
 
             game.state.start('win', true, true);
         }
@@ -3016,10 +3101,13 @@ var hardState = {
                 TODO Eventually Give the player a few seconds to kill zombies by
                 Using a timer
             */
+            /*
         this.game.physics.arcade.overlap(this.container.player, this.zombie, 
             function()
             {
                 music.stop();
+                dusk.stop();
+                night.stop();
                 game.state.start('end', true, true);
             }, null, this);
 
@@ -3027,6 +3115,8 @@ var hardState = {
             function() 
             {
                 music.stop();
+                dusk.stop();
+                night.stop();
                 game.state.start('end',true,true);
             }, this.confirmDeath, this);
 
@@ -3034,6 +3124,8 @@ var hardState = {
             function()
             {
                 music.stop();
+                dusk.stop();
+                night.stop();
                 game.state.start('end',true,true);
             }, this.confirmDeath, this);
 
@@ -3041,8 +3133,11 @@ var hardState = {
             function()
             {
                 music.stop();
+                dusk.stop();
+                night.stop();
                 game.state.start('end',true,true);
             }, this.confirmDeath, this);
+*/
 
             /*
             ZOMBIE W/ BALLOON vs BULLET
@@ -3117,6 +3212,14 @@ var hardState = {
     restartGame: function () 
     {
         easyMode = false;
+
+        // Stop all music
+        if (music)
+            music.stop();
+        if (dusk)
+            dusk.stop();
+        if (night)
+            night.stop();
 
         // Start the 'main'state, which restarts the game
         killCounter = 0;
@@ -3213,8 +3316,11 @@ var hardState = {
             zombie.kill();
             bullet.kill();
             var _z = this.twoAlone.getFirstDead();
-            _z.reset(zombie.x, zombie.y);
-            _z.body.velocity.y = -200;
+            if (_z)
+            {
+                _z.reset(zombie.x, zombie.y);
+                _z.body.velocity.y = -200;
+            }
         }
     },
 
@@ -3245,8 +3351,11 @@ var hardState = {
             zombie.kill();
             bullet.kill();
             var _z = this.threeAlone.getFirstDead();
-            _z.reset(zombie.x, zombie.y);
-            _z.body.velocity.y = -300;
+            if (_z)
+            {
+                _z.reset(zombie.x, zombie.y);
+                _z.body.velocity.y = -300;
+            }
         }
     },
 
@@ -3315,6 +3424,8 @@ var hardState = {
                 _zombie.body.y = y;
                 _zombie.body.moves = false;
                 _zombie.tween = this.game.add.tween(_zombie)
+
+
                 .to( { x: this.container.player.body.x,
                        y: 90  },
                      _zombie.speed, 
@@ -3507,19 +3618,32 @@ var hardState = {
 
             case 4:
                 _currentNumberWeights = numberWeights.fifth;  
+
+
+                // Fade out Music Box
+                music.fadeOut(5500);
+
+                // Fade In Dusk
+                dusk.fadeIn(6000, true, '');
             break;
 
             case 5:
                 _currentNumberWeights = numberWeights.sixth;  
+
+                night.fadeIn(30000, false, '');
             break;
 
             case 6:
                 _currentNumberWeights = numberWeights.seventh;  
                 _currentTypeWeights = typeWeights.third;
+
+                // Slowly fade out dusk
+                dusk.fadeOut(10000);
             break;
 
             case 7:
                 _currentNumberWeights = numberWeights.eigth;  
+
             break;
 
             case 8:
@@ -3744,8 +3868,6 @@ function pauseMenu(event)
         else if (event.x >= 336 && event.x <= 747 && 
                 event.y >= 119 && event.y <= 562)
         {
-            changeDifficulty = false;
-
             // EasyMode is ON
             if (easyMode)
             {
