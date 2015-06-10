@@ -975,8 +975,8 @@ var easyState = {
             /*
             SPAWN ZOMBIES
             */
-        //this.timer = game.time.events.loop(rateOfSpawn, 
-        //    this.addZombieHorde, this);
+        this.timer = game.time.events.loop(rateOfSpawn, 
+            this.addZombieHorde, this);
 
 
         this.reloadTimer = 
@@ -1287,7 +1287,7 @@ var easyState = {
                 Phaser.Physics.ARCADE);
             //zombie.body.setSize(50, 40, 0, 110);
             zombie.rate = -20;
-            zombie.speed = 10000;
+            zombie.speed = 10300;
 
             zombie.tween = null;
             // TODO Add the knife combat thing
@@ -1304,7 +1304,7 @@ var easyState = {
             // Zombies body only
             //zombie.body.setSize(50, 40, 0, 110);
             zombie.rate = -40;
-            zombie.speed = 5000;
+            zombie.speed = 9000;
 
             zombie.tween = null;
         });
@@ -1319,7 +1319,7 @@ var easyState = {
             // Zombies body only
             //zombie.body.setSize(50, 40, 0, 110);
             zombie.rate = -60;
-            zombie.speed = 2500;
+            zombie.speed = 8000;
 
             zombie.tween = null;
         });
@@ -2830,7 +2830,7 @@ var hardState = {
                 Phaser.Physics.ARCADE);
             //zombie.body.setSize(50, 40, 0, 110);
             zombie.rate = -20;
-            zombie.speed = 10000;
+            zombie.speed = 10300;
 
             zombie.tween = null;
             // TODO Add the knife combat thing
@@ -2847,7 +2847,7 @@ var hardState = {
             // Zombies body only
             //zombie.body.setSize(50, 40, 0, 110);
             zombie.rate = -40;
-            zombie.speed = 5000;
+            zombie.speed = 9000;
 
             zombie.tween = null;
         });
@@ -2862,7 +2862,7 @@ var hardState = {
             // Zombies body only
             //zombie.body.setSize(50, 40, 0, 110);
             zombie.rate = -60;
-            zombie.speed = 2500;
+            zombie.speed = 8000;
 
             zombie.tween = null;
         });
