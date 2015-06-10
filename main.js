@@ -103,6 +103,7 @@ var soundOn = true;
 var inControl = false;
 
 var previousMenu = SOE;
+var nextState = null;
 
 var mute = false;
 
@@ -1348,22 +1349,7 @@ var easyState = {
             dusk.stop();
             night.fadeOut();
             
-        this.black = Phaser.Color.hexToRGB('#000000');
-        this.spr_bg = this.game.add.graphics(0, 0);
-        this.spr_bg.beginFill(this.black, 1);
-        this.spr_bg.drawRect(0, 0, this.game.width, this.game.height);
-        this.spr_bg.alpha = 1;
-        this.spr_bg.endFill();
-
-        this.s = this.game.add.tween(this.spr_bg);
-        this.s.to({ alpha: 0 }, 600, Phaser.Easing.Linear.None);
-        this.s.start();
-
-        this.s.onComplete.add(function()
-        {
-            game.state.start('win', true, true);
-        }, this);
-
+            fade('win');
         }
 
         this.shotgunAmmo.updateCrop();
@@ -1573,7 +1559,7 @@ var easyState = {
                 music.stop();
                 dusk.stop();
                 night.stop();
-                game.state.start('end',true,true);
+                fade('end');
             }, null, this);
 
         this.game.physics.arcade.overlap(this.container.player, this.oneBalloon, 
@@ -1582,7 +1568,7 @@ var easyState = {
                 music.stop();
                 dusk.stop();
                 night.stop();
-                game.state.start('end',true,true);
+                fade('end');
             }, this.confirmDeath, this);
 
         this.game.physics.arcade.overlap(this.container.player, this.twoBalloons, 
@@ -1591,7 +1577,7 @@ var easyState = {
                 music.stop();
                 dusk.stop();
                 night.stop();
-                game.state.start('end',true,true);
+                fade('end');
             }, this.confirmDeath, this);
 
         this.game.physics.arcade.overlap(this.container.player, this.threeBalloons, 
@@ -1600,7 +1586,7 @@ var easyState = {
                 music.stop();
                 dusk.stop();
                 night.stop();
-                game.state.start('end',true,true);
+                fade('end');
             }, this.confirmDeath, this);
 
             /*
@@ -2907,30 +2893,7 @@ var hardState = {
             dusk.stop();
             night.fadeOut();
 
-            /*
-            game.add.tween(
-                easyState._container).to(
-                {alpha: 0},
-                2000,
-                Phaser.Easing.Linear.None,
-                true);
-*/
-        this.black = Phaser.Color.hexToRGB('#000000');
-        this.spr_bg = this.game.add.graphics(0, 0);
-        this.spr_bg.beginFill(this.black, 1);
-        this.spr_bg.drawRect(0, 0, this.game.width, this.game.height);
-        this.spr_bg.alpha = 1;
-        this.spr_bg.endFill();
-
-        this.s = this.game.add.tween(this.spr_bg)
-        this.s.to({ alpha: 0 }, 600, null)
-        this.s.start();
-        this.s.onComplete.add(function()
-        {
-            game.state.start('win', true, true);
-        }, this);
-
-            game.state.start('win', true, true);
+            fade('win');
         }
 
         this.shotgunAmmo.updateCrop();
@@ -3134,14 +3097,13 @@ var hardState = {
                 TODO Eventually Give the player a few seconds to kill zombies by
                 Using a timer
             */
-            /*
         this.game.physics.arcade.overlap(this.container.player, this.zombie, 
             function()
             {
                 music.stop();
                 dusk.stop();
                 night.stop();
-                game.state.start('end', true, true);
+                fade('end');
             }, null, this);
 
         this.game.physics.arcade.overlap(this.container.player, this.oneBalloon, 
@@ -3150,7 +3112,7 @@ var hardState = {
                 music.stop();
                 dusk.stop();
                 night.stop();
-                game.state.start('end',true,true);
+                fade('end');
             }, this.confirmDeath, this);
 
         this.game.physics.arcade.overlap(this.container.player, this.twoBalloons, 
@@ -3159,7 +3121,7 @@ var hardState = {
                 music.stop();
                 dusk.stop();
                 night.stop();
-                game.state.start('end',true,true);
+                fade('end');
             }, this.confirmDeath, this);
 
         this.game.physics.arcade.overlap(this.container.player, this.threeBalloons, 
@@ -3168,9 +3130,8 @@ var hardState = {
                 music.stop();
                 dusk.stop();
                 night.stop();
-                game.state.start('end',true,true);
+                fade('end');
             }, this.confirmDeath, this);
-*/
 
             /*
             ZOMBIE W/ BALLOON vs BULLET
@@ -4137,6 +4098,47 @@ function pauseMenu(event)
     }
 }
 
+
+
+
+function fade(_nextState) 
+{
+    var spr_bg = this.game.add.graphics(0, 0);
+    spr_bg.beginFill(Phaser.Color.hexToRGB('#000000'), 1);
+    spr_bg.drawRect(0, 0, this.game.width, this.game.height);
+    spr_bg.alpha = 0;
+    spr_bg.endFill();
+
+    nextState = _nextState;
+
+    s = game.add.tween(spr_bg);
+    s.to({ alpha: 1 }, 2000, Phaser.Easing.Linear.In);
+    s.onComplete.add(changeState, this);
+    s.start();
+};
+
+function changeState() 
+{
+    game.state.start(nextState, true, true);
+    fadeOut();
+};
+
+function fadeOut() 
+{
+    var spr_bg = this.game.add.graphics(0, 0);
+    spr_bg.beginFill(Phaser.Color.hexToRGB('#000000'), 1);
+    spr_bg.drawRect(0, 0, this.game.width, this.game.height);
+    spr_bg.alpha = 1;
+    spr_bg.endFill();
+
+    s = this.game.add.tween(spr_bg);
+    s.to({ alpha: 0 }, 6000, Phaser.Easing.Linear.In);
+    s.start();
+};
+
+
+
+
 // Add and start the 'main' state to start the game
 game.state.add('main', mainState);
 game.state.add('end', endState);
@@ -4144,4 +4146,4 @@ game.state.add('win', winState);
 game.state.add('easy', easyState);
 game.state.add('hard', hardState);
 
-game.state.start('win');
+game.state.start('main');
