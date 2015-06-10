@@ -663,7 +663,7 @@ var winState =
                             {
                                 if (!soundOn)
                                     mute = true;
-                                victory.fadeOut(1000);
+                                victory.stop();
                                 easyState.restartGame();
                                 game.state.start('easy',true,true);
                             }
@@ -671,7 +671,7 @@ var winState =
                             {
                                 if (!soundOn)
                                     mute = true;
-                                victory.fadeOut(1000);
+                                victory.stop();
                                 hardState.restartGame();
                                 game.state.start('hard',true,true);
                             }
@@ -1013,9 +1013,9 @@ var easyState = {
         */
         this.labelAmmo = 
             game.add.text(
-                this.game.width - 31, 
+                this.game.width - 51, 
                 this.game.height - 100, 
-                "80",
+                "286",
                 {font: "30px Arial", fill: "#ffffff"});
 
         /*
@@ -1341,13 +1341,29 @@ var easyState = {
 
     update: function () 
     {
-        if (killCounter === maxZombies)
+        //if (killCounter === maxZombies)
+        if (killCounter === 1)
         {
             music.stop();
             dusk.stop();
             night.fadeOut();
+            
+        this.black = Phaser.Color.hexToRGB('#000000');
+        this.spr_bg = this.game.add.graphics(0, 0);
+        this.spr_bg.beginFill(this.black, 1);
+        this.spr_bg.drawRect(0, 0, this.game.width, this.game.height);
+        this.spr_bg.alpha = 1;
+        this.spr_bg.endFill();
 
+        this.s = this.game.add.tween(this.spr_bg);
+        this.s.to({ alpha: 0 }, 600, Phaser.Easing.Linear.None);
+        this.s.start();
+
+        this.s.onComplete.add(function()
+        {
             game.state.start('win', true, true);
+        }, this);
+
         }
 
         this.shotgunAmmo.updateCrop();
@@ -2554,9 +2570,9 @@ var hardState = {
         */
         this.labelAmmo = 
             game.add.text(
-                this.game.width - 31, 
+                this.game.width - 51, 
                 this.game.height - 100,
-                 "80", 
+                 "426", 
                 {font: "30px Arial", fill: "#fefefe"});
 
 
@@ -2890,6 +2906,29 @@ var hardState = {
             music.stop();
             dusk.stop();
             night.fadeOut();
+
+            /*
+            game.add.tween(
+                easyState._container).to(
+                {alpha: 0},
+                2000,
+                Phaser.Easing.Linear.None,
+                true);
+*/
+        this.black = Phaser.Color.hexToRGB('#000000');
+        this.spr_bg = this.game.add.graphics(0, 0);
+        this.spr_bg.beginFill(this.black, 1);
+        this.spr_bg.drawRect(0, 0, this.game.width, this.game.height);
+        this.spr_bg.alpha = 1;
+        this.spr_bg.endFill();
+
+        this.s = this.game.add.tween(this.spr_bg)
+        this.s.to({ alpha: 0 }, 600, null)
+        this.s.start();
+        this.s.onComplete.add(function()
+        {
+            game.state.start('win', true, true);
+        }, this);
 
             game.state.start('win', true, true);
         }
