@@ -211,14 +211,14 @@ var mainState = {
                                 this.menu.frame = ROE;
                                 if (!soundOn)
                                     mute = true;
-                                game.state.start('easy');
+                                fade('easy');
                             }
                             else
                             {
                                 this.menu.frame = ROH;
                                 if (!soundOn)
                                     mute = true;
-                                game.state.start('hard');
+                                fade('hard');
                             }
                         }
                         // Controls Selected
@@ -256,14 +256,14 @@ var mainState = {
                                 this.menu.frame = ROE;
                                 if (!soundOn)
                                     mute = true;
-                                game.state.start('easy');
+                                fade('easy');
                             }
                             else
                             {
                                 this.menu.frame = ROH;
                                 if (!soundOn)
                                     mute = true;
-                                game.state.start('hard');
+                                fade('hard');
                             }
                         }
                         // Controls Selected
@@ -301,14 +301,14 @@ var mainState = {
                                 this.menu.frame = RFE;
                                 if (!soundOn)
                                     mute = true;
-                                game.state.start('easy');
+                                fade('easy');
                             }
                             else
                             {
                                 this.menu.frame = RFH;
                                 if (!soundOn)
                                     mute = true;
-                                game.state.start('hard');
+                                fade('hard');
                             }
                         }
                         // Controls Selected
@@ -347,14 +347,14 @@ var mainState = {
                                 this.menu.frame = RFE;
                                 if (!soundOn)
                                     mute = true;
-                                game.state.start('easy');
+                                fade('easy');
                             }
                             else
                             {
                                 this.menu.frame = RFH;
                                 if (!soundOn)
                                     mute = true;
-                                game.state.start('hard');
+                                fade('hard');
                             }
                         }
                         // Controls Selected
@@ -520,14 +520,14 @@ var endState =
                                 if (!soundOn)
                                     mute = true;
                                 easyState.restartGame();
-                                game.state.start('easy',true,true);
+                                fade('easy');
                             }
                             else
                             {
                                 if (!soundOn)
                                     mute = true;
                                 hardState.restartGame();
-                                game.state.start('hard',true,true);
+                                fade('hard');
                             }
                         }
                         // Difficulty changed to Hard 
@@ -548,14 +548,14 @@ var endState =
                                 if (!soundOn)
                                     mute = true;
                                 easyState.restartGame();
-                                game.state.start('easy',true,true);
+                                fade('easy');
                             }
                             else
                             {
                                 if (!soundOn)
                                     mute = true;
                                 hardState.restartGame();
-                                game.state.start('hard',true,true);
+                                fade('hard');
                             }
                         }
                         // Difficulty changed to Easy 
@@ -666,7 +666,7 @@ var winState =
                                     mute = true;
                                 victory.stop();
                                 easyState.restartGame();
-                                game.state.start('easy',true,true);
+                                fade('easy');
                             }
                             else
                             {
@@ -674,7 +674,7 @@ var winState =
                                     mute = true;
                                 victory.stop();
                                 hardState.restartGame();
-                                game.state.start('hard',true,true);
+                                fade('hard');
                             }
                         }
                         // Difficulty changed to Hard 
@@ -696,7 +696,7 @@ var winState =
                                     mute = true;
                                 victory.stop();
                                 easyState.restartGame();
-                                game.state.start('easy',true,true);
+                                fade('easy');
                             }
                             else
                             {
@@ -705,7 +705,7 @@ var winState =
                                 //victory.fadeOut();
                                 victory.stop();
                                 hardState.restartGame();
-                                game.state.start('hard',true,true);
+                                fade('hard');
                             }
                         }
                         // Difficulty changed to Easy 
@@ -3882,7 +3882,7 @@ function pauseMenu(event)
                                 if (!soundOn)
                                     mute = true;
                                 hardState.restartGame();
-                                game.state.start('hard');
+                                fade('hard');
                             }
                             else
                             {
@@ -3891,7 +3891,7 @@ function pauseMenu(event)
                                 if(!soundOn)
                                     mute = true;
                                 easyState.restartGame();
-                                game.state.start('easy');
+                                fade('easy');
                             }
 
                             this.game.paused = false;
@@ -3934,7 +3934,7 @@ function pauseMenu(event)
                                 if (!soundOn)
                                     mute = true;
                                 hardState.restartGame();
-                                game.state.start('hard');
+                                fade('hard');
                             }
                             else
                             {
@@ -3943,7 +3943,7 @@ function pauseMenu(event)
                                 if (!soundOn)
                                     mute = true;
                                 easyState.restartGame();
-                                game.state.start('easy');
+                                fade('easy');
                             }
 
                             this.game.paused = false;
@@ -3996,7 +3996,7 @@ function pauseMenu(event)
                                 if (!soundOn)
                                     mute = true;
                                 easyState.restartGame();
-                                game.state.start('easy');
+                                fade('easy');
                             }
                             else
                             {
@@ -4005,7 +4005,7 @@ function pauseMenu(event)
                                 if (!soundOn)
                                     mute = true;
                                 hardState.restartGame();
-                                game.state.start('hard');
+                                fade('hard');
                             }
 
                             this.menu.visible = false;
@@ -4047,7 +4047,7 @@ function pauseMenu(event)
                                 if (!soundOn)
                                     mute = true;
                                 easyState.restartGame();
-                                game.state.start('easy');
+                                fade('easy');
                             }
                             else
                             {
@@ -4056,7 +4056,7 @@ function pauseMenu(event)
                                 if (!soundOn)
                                     mute = true;
                                 hardState.restartGame();
-                                game.state.start('hard');
+                                fade('hard');
                             }
 
                             this.menu.visible = false;
