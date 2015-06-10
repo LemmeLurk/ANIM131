@@ -586,6 +586,144 @@ var endState =
 
 
 
+/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+        VICTORY
+* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+var winState = 
+{
+    preload: function()
+    {
+        game.load.image('winBackground', 'assets/winBackground.png');
+        game.load.spritesheet('winMenu', 'assets/winMenu.png', 413, 216);
+    },
+
+    create: function()
+    {
+        game.add.sprite(0,0,'winBackground');
+        this.winMenu = game.add.sprite(
+            //game.world.centerX - ((826*.7)/2),
+            //game.world.centerY - ((701*.7)/2),
+            game.world.centerX - (413/2),
+            game.world.height - 413,
+            'winMenu', 0);
+        //this.winMenu.scale.set(.7, .7);
+
+        // Hopefully this works
+        this.game.input.onDown.add(pauseHandler, this);
+
+        function pauseHandler(event)
+        {
+            changeDifficulty = false;
+
+            /*
+            Within Menu Bounds
+            */
+            if (event.x >= 474 && event.x <= 882 && 
+                    event.y >= 224 && event.y <= 436)
+            {
+                switch (this.winMenu.frame)
+                {
+                    // Mode: Easy
+                    case 0:
+                        // Restart Selected 
+                        if (event.y <= 319)
+                        {
+                            if (easyMode)
+                            {
+                                if (!soundOn)
+                                    mute = true;
+                                easyState.restartGame();
+                                game.state.start('easy',true,true);
+                            }
+                            else
+                            {
+                                if (!soundOn)
+                                    mute = true;
+                                hardState.restartGame();
+                                game.state.start('hard',true,true);
+                            }
+                        }
+                        // Difficulty changed to Hard 
+                        else if (event.y <= 436)
+                        {
+                            easyMode = false;
+                            this.winMenu.frame = 1;
+                        }
+                    break;
+
+                    // Mode: Hard 
+                    case 1:
+                       // Restart 
+                        if (event.y <= 319)
+                        {
+                            if (easyMode)
+                            {
+                                if (!soundOn)
+                                    mute = true;
+                                easyState.restartGame();
+                                game.state.start('easy',true,true);
+                            }
+                            else
+                            {
+                                if (!soundOn)
+                                    mute = true;
+                                hardState.restartGame();
+                                game.state.start('hard',true,true);
+                            }
+                        }
+                        // Difficulty changed to Easy 
+                        else if (event.y <= 436)
+                        {
+                            easyMode = true;
+                            this.winMenu.frame = 0;
+                        }
+                    break;
+                }
+            }
+        }
+    },
+};
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -1179,8 +1317,9 @@ var easyState = {
     {
         if (killCounter === maxZombies)
         {
-            alert('Congrats... dem undead is dead');
-            this.restartGame();
+            music.stop();
+
+            game.state.start('win', true, true);
         }
 
         this.shotgunAmmo.updateCrop();
@@ -2671,8 +2810,9 @@ var hardState = {
     {
         if (killCounter === maxZombies)
         {
-            alert('Congrats... dem undead is dead');
-            this.restartGame();
+            music.stop();
+
+            game.state.start('win', true, true);
         }
 
         this.shotgunAmmo.updateCrop();
@@ -3845,7 +3985,8 @@ function pauseMenu(event)
 // Add and start the 'main' state to start the game
 game.state.add('main', mainState);
 game.state.add('end', endState);
+game.state.add('win', winState);
 game.state.add('easy', easyState);
 game.state.add('hard', hardState);
 
-game.state.start('main');
+game.state.start('win');
