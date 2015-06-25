@@ -487,8 +487,8 @@ var endState =
 
         //this.labelScore = game.add.text(52, -91, maxZombies - killCounter,
         this.points = game.add.text(712, 93, maxZombies - killCounter,
-            {font:
-                "bold 152px Arial", fill: "#39b54a" });
+            {font: "bold 152px Arial", fill: '#8F0000' });
+            /* GREEN "#39b54a"*/ 
         this.points.visible = true;
         this.points.bringToTop();
         console.log("maxZombies: " + maxZombies + "\r\nKill Count: " +
@@ -1342,8 +1342,7 @@ var easyState = {
 
     update: function () 
     {
-        //if (killCounter === maxZombies)
-        if (killCounter === 1)
+        if (killCounter === maxZombies)
         {
             music.stop();
             dusk.stop();
