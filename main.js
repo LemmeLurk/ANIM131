@@ -213,22 +213,14 @@ var mainState = {
                                 this.menu.frame = ROE;
                                 if (!soundOn)
                                     mute = true;
-<<<<<<< HEAD
                                 fade('easy');
-=======
-                                game.state.start('easy');
->>>>>>> origin/master
                             }
                             else
                             {
                                 this.menu.frame = ROH;
                                 if (!soundOn)
                                     mute = true;
-<<<<<<< HEAD
                                 fade('hard');
-=======
-                                game.state.start('hard');
->>>>>>> origin/master
                             }
                         }
                         // Controls Selected
@@ -266,22 +258,14 @@ var mainState = {
                                 this.menu.frame = ROE;
                                 if (!soundOn)
                                     mute = true;
-<<<<<<< HEAD
                                 fade('easy');
-=======
-                                game.state.start('easy');
->>>>>>> origin/master
                             }
                             else
                             {
                                 this.menu.frame = ROH;
                                 if (!soundOn)
                                     mute = true;
-<<<<<<< HEAD
                                 fade('hard');
-=======
-                                game.state.start('hard');
->>>>>>> origin/master
                             }
                         }
                         // Controls Selected
@@ -319,22 +303,14 @@ var mainState = {
                                 this.menu.frame = RFE;
                                 if (!soundOn)
                                     mute = true;
-<<<<<<< HEAD
                                 fade('easy');
-=======
-                                game.state.start('easy');
->>>>>>> origin/master
                             }
                             else
                             {
                                 this.menu.frame = RFH;
                                 if (!soundOn)
                                     mute = true;
-<<<<<<< HEAD
                                 fade('hard');
-=======
-                                game.state.start('hard');
->>>>>>> origin/master
                             }
                         }
                         // Controls Selected
@@ -373,22 +349,14 @@ var mainState = {
                                 this.menu.frame = RFE;
                                 if (!soundOn)
                                     mute = true;
-<<<<<<< HEAD
                                 fade('easy');
-=======
-                                game.state.start('easy');
->>>>>>> origin/master
                             }
                             else
                             {
                                 this.menu.frame = RFH;
                                 if (!soundOn)
                                     mute = true;
-<<<<<<< HEAD
                                 fade('hard');
-=======
-                                game.state.start('hard');
->>>>>>> origin/master
                             }
                         }
                         // Controls Selected
@@ -812,7 +780,6 @@ var easyState = {
                 'musicBox', 
                 ['audio/musicBox.mp3', 'audio/musicBox.ogg']);    
 
-<<<<<<< HEAD
             game.load.audio(
                 'dusk',
                 ['audio/dusk.mp3', 'audio/dusk.ogg']);
@@ -821,8 +788,6 @@ var easyState = {
                 'night',
                 ['audio/night.mp3', 'audio/night.ogg']);
 
-=======
->>>>>>> origin/master
         // Load the image of Cloud
         game.load.image('cloud', 'assets/cloud.png');
 
@@ -1002,205 +967,7 @@ var easyState = {
 
 
         // Hopefully this works
-<<<<<<< HEAD
         this.game.input.onDown.add(pauseMenu, this);
-=======
-        this.game.input.onDown.add(pauseHandler, this);
-
-        function pauseHandler(event)
-        {
-            if (this.game.paused)
-            {
-                // Exit Control Menu
-                if (inControl)
-                {
-                    inControl = false;
-
-                    /*
-                    Within Bounds
-                        Player wants to go back Menu
-                    */
-                    if (event.x >= 336 && event.x <= 747 && 
-                        event.y >= 119 && event.y <= 562)
-                    {
-                        this.menu.frame = previousMenu; 
-                    }                
-                    /*
-                    Out of Bounds
-                        Player wants to Exit Menu
-                    */                        
-                    else
-                    {
-                        this.menu.visible = false;
-                        this.game.paused = false;
-                    }
-               }
-                /*
-                Within Menu Bounds
-                */
-                else if (event.x >= 336 && event.x <= 747 && 
-                        event.y >= 119 && event.y <= 562)
-                {
-                    console.log ('Menu: ' + this.menu.frame);
-                    switch (this.menu.frame)
-                    {
-                        // Restart | Sound: On | Mode: Easy
-                        case ROE:
-                            previousMenu = ROE;
-                            // Restart Selected
-                            if(event.y <= 218)
-                            {
-                                // Hide Menu
-                                this.menu.visible = false;
-                                this.menu.frame = ROE;
-                                this.restartGame();
-                                this.game.paused = false;
-                            }
-                            // Controls Selected
-                            else if (event.y <= 330)
-                            {
-                                inControl = true;
-                                this.menu.frame = CONTROLS;
-                            }
-                            // Sound Selected | OFF
-                            else if (event.y <= 447)
-                            {
-                                soundOn = false;
-                                music.pause(); 
-                                this.menu.frame = RFE;
-                            }
-                            // Difficulty Selected
-                            else if (event.y <= 562)
-                            {
-                                easyMode = false;
-                                previousMenu =
-                                this.game.paused = false;
-                                this.menu.frame = ROH;
-                                this.menu.visible = false;
-                                game.state.start('hard');
-                            }
-                        break;
-
-                        // Restart | Sound: On | Mode: Hard 
-                        case ROH:
-                            previousMenu = ROH;
-                            // Restart Selected
-                            if(event.y <= 218)
-                            {
-                                // Hide Menu
-                                this.menu.visible = false;
-                                this.menu.frame = ROH;
-                                this.restartGame();
-                                this.game.paused = false;
-                            }
-                            // Controls Selected
-                            else if (event.y <= 330)
-                            {
-                                inControl = true;
-                                this.menu.frame = CONTROLS;
-                            }
-                            // Sound Selected | OFF
-                            else if (event.y <= 447)
-                            {
-                                soundOn = true;
-                                if (mute)
-                                    music.play();
-                                else
-                                    music.resume(); 
-                                this.menu.frame = RFH;
-                            }
-                            // Difficulty Selected
-                            else if (event.y <= 562)
-                            {
-                                easyMode = true;
-                                previousMenu =
-                                this.menu.frame = ROE;
-                                this.menu.visible = false;
-                                game.state.start('easy');
-                                this.game.paused = false;
-                            }
-                        break;
-
-                        // Restart | Sound: Off | Mode: Easy
-                        case RFE:
-                            previousMenu = RFE;
-                            // Restart Selected
-                            if(event.y <= 218)
-                            {
-                                // Hide Menu
-                                this.menu.visible = false;
-                                this.menu.frame = RFE;
-                                this.restartGame();
-                                this.game.paused = false;
-                            }
-                            // Controls Selected
-                            else if (event.y <= 330)
-                            {
-                                inControl = true;
-                                this.menu.frame = CONTROLS;
-                            }
-                            // Sound Selected | ON
-                            else if (event.y <= 447)
-                            {
-                                soundOn = true;
-                                if (mute)
-                                    music.play();
-                                else
-                                    music.resume(); 
-                                this.menu.frame = ROE;
-                            }
-                            // Difficulty Selected | HARD
-                            else if (event.y <= 562)
-                            {
-                                easyMode = false;
-                                previousMenu =
-                                this.menu.frame = RFH;
-                                this.menu.visible = false;
-                                game.state.start('hard');
-                            }
-                        break;
-
-                        // Restart | Sound: Off | Mode: Hard
-                        case RFH:
-                            previousMenu = RFH;
-
-                            // Restart Selected
-                            if(event.y <= 218)
-                            {
-                                // Hide Menu
-                                this.menu.visible = false;
-                                this.menu.frame = RFH;
-                                this.restartGame();
-                                this.game.paused = false;
-                            }
-                            // Controls Selected
-                            else if (event.y <= 330)
-                            {
-                                inControl = true;
-                                this.menu.frame = CONTROLS;
-                            }
-                            // Sound Selected | ON
-                            else if (event.y <= 447)
-                            {
-                                soundOn = true;
-                                if (mute)
-                                    music.play();
-                                else
-                                    music.resume(); 
-                                this.menu.frame = ROH;
-                            }
-                            // Difficulty Selected | EASY
-                            else if (event.y <= 562)
-                            {
-                                easyMode = true;
-                                previousMenu = 
-                                this.menu.frame = RFE;
-                                this.menu.visible = false;
-                                game.state.start('easy');
-                                this.game.paused = false;
-                            }
-                        break;
->>>>>>> origin/master
 
  
 
@@ -1793,7 +1560,6 @@ var easyState = {
                 TODO Eventually Give the player a few seconds to kill zombies by
                 Using a timer
             */
-<<<<<<< HEAD
         this.game.physics.arcade.overlap(this.container.player, this.zombie, 
             function()
             {
@@ -1829,28 +1595,6 @@ var easyState = {
                 night.stop();
                 fade('end');
             }, this.confirmDeath, this);
-=======
-        if (this.game.physics.arcade.overlap(this.container.player, this.zombie, 
-            this.restartGame, null, this))
-            alert('What a terrible way to go -_- \n\n\n' +
-                'Zombies Destroyed: ' + killCounter + '\n' +
-                'Zombies Remaining: ' + maxZombies - killCounter);
-        if( this.game.physics.arcade.overlap(this.container.player, this.oneBalloon, 
-            this.restartGame, this.confirmDeath, this))
-            alert('What a terrible way to go -_- \n\n\n' +
-                'Zombies Destroyed: ' + killCounter + '\n' +
-                'Zombies Remaining: ' + maxZombies - killCounter);
-        if( this.game.physics.arcade.overlap(this.container.player, this.twoBalloons, 
-            this.restartGame, this.confirmDeath, this))
-            alert('What a terrible way to go -_- \n\n\n' +
-                'Zombies Destroyed: ' + killCounter + '\n' +
-                'Zombies Remaining: ' + maxZombies - killCounter);
-        if( this.game.physics.arcade.overlap(this.container.player, this.threeBalloons, 
-            this.restartGame, this.confirmDeath, this))
-            alert('What a terrible way to go -_- \n\n\n' +
-                'Zombies Destroyed: ' + killCounter + '\n' +
-                'Zombies Remaining: ' + maxZombies - killCounter);
->>>>>>> origin/master
 
             /*
             ZOMBIE W/ BALLOON vs BULLET
@@ -2581,7 +2325,6 @@ var hardState = {
                 ['audio/musicBox.mp3',
                 'audio/musicBox.ogg']);
 
-<<<<<<< HEAD
             game.load.audio(
                 'dusk',
                 ['audio/dusk.mp3', 'audio/dusk.ogg']);
@@ -2590,8 +2333,6 @@ var hardState = {
                 'night',
                 ['audio/night.mp3', 'audio/night.ogg']);
 
-=======
->>>>>>> origin/master
         // Load the image of Cloud
         game.load.image('cloud', 'assets/cloud.png');
 
@@ -2693,7 +2434,6 @@ var hardState = {
 
         maxZombies = 200;
 
-<<<<<<< HEAD
         music = game.add.audio('musicBox');
         music.loop = true;
 
@@ -2711,12 +2451,6 @@ var hardState = {
         night = game.add.audio('night');
 
         night.loop = true;
-=======
-       music = game.add.audio('musicBox');
-
-        if (soundOn)
-           music.play(); 
->>>>>>> origin/master
 
 
         /*
@@ -2753,228 +2487,6 @@ var hardState = {
                     else
                     {
                         this.menu.frame = RFE;
-<<<<<<< HEAD
-=======
-                    }
-                }
-                else
-                {
-                    if (soundOn)
-                    {
-                        this.menu.frame = ROH;
-                    }
-                    else 
-                    {
-                        this.menu.frame = RFH;
-                    }
-                }
-
-                this.menu.visible = true;
-                this.menu.bringToTop();
-            }
-        },this);
-
-
-        // Hopefully this works
-        this.game.input.onDown.add(pauseHandler, this);
-
-        function pauseHandler(event)
-        {
-            if (this.game.paused)
-            {
-                // Exit Control Menu
-                if (inControl)
-                {
-                    inControl = false;
-
-                    /*
-                    Within Bounds
-                        Player wants to go back Menu
-                    */
-                    if (event.x >= 336 && event.x <= 747 && 
-                        event.y >= 119 && event.y <= 562)
-                    {
-                        this.menu.frame = previousMenu; 
-                    }                
-                    /*
-                    Out of Bounds
-                        Player wants to Exit Menu
-                    */                        
-                    else
-                    {
-                        this.menu.visible = false;
-                        this.game.paused = false;
-                    }
-               }
-                /*
-                Within Menu Bounds
-                */
-                else if (event.x >= 336 && event.x <= 747 && 
-                        event.y >= 119 && event.y <= 562)
-                {
-                    console.log ('Menu: ' + this.menu.frame);
-                    switch (this.menu.frame)
-                    {
-                        // Restart | Sound: On | Mode: Easy
-                        case ROE:
-                            previousMenu = ROE;
-                            // Restart Selected
-                            if(event.y <= 218)
-                            {
-                                // Hide Menu
-                                this.menu.visible = false;
-                                this.menu.frame = ROE;
-                                easyMode = true;
-                                this.restartGame();
-                                this.game.paused = false;
-                            }
-                            // Controls Selected
-                            else if (event.y <= 330)
-                            {
-                                inControl = true;
-                                this.menu.frame = CONTROLS;
-                            }
-                            // Sound Selected | OFF
-                            else if (event.y <= 447)
-                            {
-                                soundOn = false;
-                                music.pause(); 
-                                this.menu.frame = RFE;
-                            }
-                            // Difficulty Selected
-                            else if (event.y <= 562)
-                            {
-                                this.menu.visible = false;
-                                easyMode = false;
-                                previousMenu =
-                                this.menu.frame = ROH;
-                                game.state.start('hard');
-                            }
-                        break;
-
-                        // Restart | Sound: On | Mode: Hard 
-                        case ROH:
-                            previousMenu = ROH;
-                            // Restart Selected
-                            if(event.y <= 218)
-                            {
-                                // Hide Menu
-                                this.menu.visible = false;
-                                this.menu.frame = ROH;
-                                easyMode = true;
-                                this.restartGame();
-                                this.game.paused = false;
-                            }
-                            // Controls Selected
-                            else if (event.y <= 330)
-                            {
-                                inControl = true;
-                                this.menu.frame = CONTROLS;
-                            }
-                            // Sound Selected | OFF
-                            else if (event.y <= 447)
-                            {
-                                soundOn = false;
-                                music.pause(); 
-                                this.menu.frame = RFH;
-                            }
-                            // Difficulty Selected
-                            else if (event.y <= 562)
-                            {
-                                easyMode = true;
-                                previousMenu =
-                                this.menu.frame = ROE;
-                                this.menu.visible = false;
-                                game.state.start('easy');
-                            }
-                        break;
-
-                        // Restart | Sound: Off | Mode: Easy
-                        case RFE:
-                            previousMenu = RFE;
-                            // Restart Selected
-                            if(event.y <= 218)
-                            {
-                                // Hide Menu
-                                this.menu.visible = false;
-                                this.menu.frame = RFE;
-                                this.restartGame();
-                                this.game.paused = false;
-                            }
-                            // Controls Selected
-                            else if (event.y <= 330)
-                            {
-                                inControl = true;
-                                this.menu.frame = CONTROLS;
-                            }
-                            // Sound Selected | ON
-                            else if (event.y <= 447)
-                            {
-                                soundOn = true;
-                                if (mute)
-                                    music.play();
-                                else
-                                    music.resume(); 
-                                this.menu.frame = ROE;
-                            }
-                            // Difficulty Selected | HARD
-                            else if (event.y <= 562)
-                            {
-                                easyMode = false;
-                                previousMenu =
-                                this.menu.frame = RFH;
-                                this.menu.visible = false;
-                                game.state.start('hard');
-                            }
-                        break;
-
-                        // Restart | Sound: Off | Mode: Hard
-                        case RFH:
-                            previousMenu = RFH;
-
-                            // Restart Selected
-                            if(event.y <= 218)
-                            {
-                                // Hide Menu
-                                this.menu.visible = false;
-                                this.menu.frame = RFH;
-                                easyMode = false;
-                                this.restartGame();
-                                this.game.paused = false;
-                            }
-                            // Controls Selected
-                            else if (event.y <= 330)
-                            {
-                                inControl = true;
-                                this.menu.frame = CONTROLS;
-                            }
-                            // Sound Selected | ON
-                            else if (event.y <= 447)
-                            {
-                                soundOn = true;
-                                if (mute)
-                                    music.play();
-                                else
-                                    music.resume(); 
-                                this.menu.frame = ROH;
-                            }
-                            // Difficulty Selected | EASY
-                            else if (event.y <= 562)
-                            {
-                                easyMode = true;
-                                previousMenu = 
-                                this.menu.frame = RFE;
-                                this.menu.visible = false;
-                                game.state.start('easy');
-                            }
-                        break;
-
-                        default:
-                            console.log('default summoned!');
-                            console.log('this.menu.frame: ' + this.menu.frame);
-                            this.menu.frame = previousMenu;
-                        break;
->>>>>>> origin/master
                     }
                 }
                 else
